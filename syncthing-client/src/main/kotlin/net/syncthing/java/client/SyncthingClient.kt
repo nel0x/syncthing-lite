@@ -16,9 +16,13 @@ package net.syncthing.java.client
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
-import net.syncthing.java.bep.*
+import net.syncthing.java.bep.BlockPuller
+import net.syncthing.java.bep.BlockPullerStatus
+import net.syncthing.java.bep.BlockPusher
+import net.syncthing.java.bep.RequestHandlerRegistry
 import net.syncthing.java.bep.connectionactor.ConnectionActorGenerator
 import net.syncthing.java.bep.connectionactor.ConnectionActorWrapper
+import net.syncthing.java.bep.index.IndexHandler
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.FileInfo
 import net.syncthing.java.core.configuration.Configuration
@@ -32,9 +36,10 @@ import java.util.*
 class SyncthingClient(
         private val configuration: Configuration,
         private val repository: IndexRepository,
-        private val tempRepository: TempRepository
+        private val tempRepository: TempRepository,
+        enableDetailedException: Boolean = false
 ) : Closeable {
-    val indexHandler = IndexHandler(configuration, repository, tempRepository)
+    val indexHandler = IndexHandler(configuration, repository, tempRepository, enableDetailedException)
     val discoveryHandler = DiscoveryHandler(configuration)
     private val onConnectionChangedListeners = Collections.synchronizedList(mutableListOf<(DeviceId) -> Unit>())
 

@@ -13,7 +13,10 @@
  */
 package net.syncthing.java.client.cli
 
+import kotlinx.coroutines.channels.consume
 import kotlinx.coroutines.runBlocking
+import net.syncthing.java.bep.index.browser.DirectoryContentListing
+import net.syncthing.java.bep.index.browser.IndexBrowser
 import net.syncthing.java.client.SyncthingClient
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.DeviceInfo
@@ -26,7 +29,6 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.io.FileInputStream
 import java.io.IOException
-import java.util.concurrent.CountDownLatch
 
 class Main(private val commandLine: CommandLine) {
 
@@ -117,7 +119,6 @@ class Main(private val commandLine: CommandLine) {
                 System.out.println("file path = $path")
                 val folder = path.split(":".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[0]
                 path = path.split(":".toRegex()).dropLastWhile({ it.isEmpty() }).toTypedArray()[1]
-                val latch = CountDownLatch(1)
                 val blockPusher = syncthingClient.getBlockPusher(folder)
 
                 val observer = runBlocking {
@@ -169,33 +170,35 @@ class Main(private val commandLine: CommandLine) {
                 System.out.println("uploaded dir to network")
             }
             "L" -> {
-                waitForIndexUpdate(syncthingClient, configuration)
-                for (folder in syncthingClient.indexHandler.folderList()) {
-                    syncthingClient.indexHandler.newIndexBrowser(folder).use { indexBrowser ->
-                        System.out.println("list folder = ${indexBrowser.folder}")
-                        for (fileInfo in indexBrowser.listFiles()) {
+                waitForIndexUpdate(syncthingClient)
+                for (folder in configuration.folders) {
+                    System.out.println("list folder = ${folder}")
+                    val listing = syncthingClient.indexHandler.indexBrowser.getDirectoryListing(folder.folderId, IndexBrowser.ROOT_PATH)
+
+                    if (listing is DirectoryContentListing) {
+                        for (fileInfo in listing.entries) {
                             System.out.println("${fileInfo.type.name.substring(0, 1)}\t${fileInfo.describeSize()}\t${fileInfo.path}")
                         }
                     }
                 }
             }
             "I" -> {
-                waitForIndexUpdate(syncthingClient, configuration)
+                waitForIndexUpdate(syncthingClient)
                 val folderInfo = StringBuilder()
-                for (folder in syncthingClient.indexHandler.folderList()) {
+                for (folder in configuration.folders) {
                     folderInfo.append("\nfolder info: ")
-                            .append(syncthingClient.indexHandler.getFolderInfo(folder))
+                            .append(folder)
                     folderInfo.append("\nfolder stats: ")
-                            .append(syncthingClient.indexHandler.newFolderBrowser().getFolderStats(folder).dumpInfo())
+                            .append(syncthingClient.indexHandler.folderBrowser.getFolderStatusSync(folder.folderId).stats.infoDump)
                             .append("\n")
                 }
                 System.out.println("folders:\n$folderInfo\n")
             }
             "l" -> {
                 var folderInfo = ""
-                for (folder in syncthingClient.indexHandler.folderList()) {
-                    folderInfo += "\nfolder info: " + syncthingClient.indexHandler.getFolderInfo(folder)
-                    folderInfo += "\nfolder stats: " + syncthingClient.indexHandler.newFolderBrowser().getFolderStats(folder).dumpInfo() + "\n"
+                for (folder in configuration.folders) {
+                    folderInfo += "\nfolder info: " + folder
+                    folderInfo += "\nfolder stats: " + syncthingClient.indexHandler.folderBrowser.getFolderStatusSync(folder.folderId).stats.infoDump + "\n"
                 }
                 System.out.println("folders:\n$folderInfo\n")
             }
@@ -211,11 +214,12 @@ class Main(private val commandLine: CommandLine) {
     }
 
     @Throws(InterruptedException::class)
-    private fun waitForIndexUpdate(client: SyncthingClient, configuration: Configuration) {
-        val latch = CountDownLatch(configuration.peers.size)
-        client.indexHandler.registerOnFullIndexAcquiredListenersListener {
-            latch.countDown()
+    private fun waitForIndexUpdate(client: SyncthingClient) {
+        // FIXME: what happens if the index update happened already?
+        runBlocking {
+            client.indexHandler.subscribeToOnFullIndexAcquiredEvents().consume {
+                this.receive()  // wait until there is one event
+            }
         }
-        latch.await()
     }
 }

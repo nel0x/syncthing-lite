@@ -2,12 +2,10 @@ package net.syncthing.lite.fragments
 
 import android.arch.lifecycle.Observer
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.FolderInfo
 import net.syncthing.java.core.beans.FolderStats
@@ -18,49 +16,30 @@ import net.syncthing.lite.databinding.FragmentFoldersBinding
 import org.jetbrains.anko.intentFor
 
 class FoldersFragment : SyncthingFragment() {
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        val adapter = FoldersListAdapter()
 
-    private val TAG = "FoldersFragment"
-
-    private lateinit var binding: FragmentFoldersBinding
-
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View? {
-        binding = FragmentFoldersBinding.inflate(layoutInflater, container, false)
-
-        libraryHandler.isListeningPortTaken.observe(this, Observer { binding.listeningPortTaken = it })
-
-        return binding.root
-    }
-
-    override fun onLibraryLoaded() {
-        showAllFoldersListView()
-    }
-
-    private fun showAllFoldersListView() {
-        libraryHandler.folderBrowser { folderBrowser ->
-            val list = folderBrowser.folderInfoAndStatsList()
-
-            GlobalScope.launch (Dispatchers.Main) {
-                Log.i(TAG, "list folders = " + list + " (" + list.size + " records)")
-                val adapter = FoldersListAdapter().apply { data = list }
-                binding.list.adapter = adapter
-                adapter.listener = object : FolderListAdapterListener {
-                    override fun onFolderClicked(folderInfo: FolderInfo, folderStats: FolderStats) {
-                        startActivity(
-                                activity!!.intentFor<FolderBrowserActivity>(
-                                        FolderBrowserActivity.EXTRA_FOLDER_NAME to folderInfo.folderId
-                                )
+        adapter.listener = object : FolderListAdapterListener {
+            override fun onFolderClicked(folderInfo: FolderInfo, folderStats: FolderStats) {
+                startActivity(
+                        activity!!.intentFor<FolderBrowserActivity>(
+                                FolderBrowserActivity.EXTRA_FOLDER_NAME to folderInfo.folderId
                         )
-                    }
-                }
-
-                binding.isEmpty = list.isEmpty()
+                )
             }
         }
-    }
 
-    override fun onIndexUpdateComplete(folderInfo: FolderInfo) {
-        super.onIndexUpdateComplete(folderInfo)
-        showAllFoldersListView()
+        val binding = FragmentFoldersBinding.inflate(layoutInflater, container, false)
+        binding.list.adapter = adapter
+        libraryHandler.isListeningPortTaken.observe(this, Observer { binding.listeningPortTaken = it })
+
+        launch {
+            libraryHandler.subscribeToFolderStatusList().consumeEach {
+                adapter.data = it
+                binding.isEmpty = it.isEmpty()
+            }
+        }
+
+        return binding.root
     }
 }

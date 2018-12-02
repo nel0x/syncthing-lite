@@ -17,10 +17,19 @@ package net.syncthing.java.bep
 import com.google.protobuf.ByteString
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.consumeEach
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import net.syncthing.java.bep.BlockExchangeProtos.Vector
 import net.syncthing.java.bep.connectionactor.ConnectionActorWrapper
-import net.syncthing.java.core.beans.*
+import net.syncthing.java.bep.index.FolderStatsUpdateCollector
+import net.syncthing.java.bep.index.IndexElementProcessor
+import net.syncthing.java.bep.index.IndexHandler
+import net.syncthing.java.bep.index.IndexMessageProcessor
+import net.syncthing.java.core.beans.BlockInfo
+import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.FileInfo.Version
+import net.syncthing.java.core.beans.FolderStats
 import net.syncthing.java.core.utils.BlockUtils
 import net.syncthing.java.core.utils.NetworkUtils
 import org.apache.commons.io.IOUtils
@@ -46,7 +55,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
     private val logger = LoggerFactory.getLogger(javaClass)
 
     suspend fun pushDelete(folderId: String, targetPath: String): BlockExchangeProtos.IndexUpdate {
-        val fileInfo = indexHandler.waitForRemoteIndexAcquired(connectionHandler).getFileInfoByPath(folderId, targetPath)!!
+        val fileInfo = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler).getFileInfoByPath(folderId, targetPath)!!
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(fileInfo.folder), {"supplied connection handler $connectionHandler will not share folder ${fileInfo.folder}"})
         return sendIndexUpdate(folderId, BlockExchangeProtos.FileInfo.newBuilder()
                 .setName(targetPath)
@@ -62,7 +71,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
     }
 
     suspend fun pushFile(inputStream: InputStream, folderId: String, targetPath: String): FileUploadObserver {
-        val fileInfo = indexHandler.waitForRemoteIndexAcquired(connectionHandler).getFileInfoByPath(folderId, targetPath)
+        val fileInfo = indexHandler.waitForRemoteIndexAcquiredWithTimeout(connectionHandler).getFileInfoByPath(folderId, targetPath)
         NetworkUtils.assertProtocol(connectionHandler.hasFolder(folderId), {"supplied connection handler $connectionHandler will not share folder $folderId"})
         assert(fileInfo == null || fileInfo.folder == folderId)
         assert(fileInfo == null || fileInfo.path == targetPath)
@@ -99,20 +108,22 @@ class BlockPusher(private val localDeviceId: DeviceId,
         }
 
         logger.debug("send index update for file = {}", targetPath)
-        val indexListener = { folderInfo: FolderInfo, newRecords: List<FileInfo>, _: IndexInfo ->
-            if (folderInfo.folderId == folderId) {
-                for (fileInfo2 in newRecords) {
-                    if (fileInfo2.path == targetPath && fileInfo2.hash == dataSource.getHash()) { //TODO check not invalid
-                        //                                sentBlocks.addAll(dataSource.getHashes());
-                        isCompleted.set(true)
-                        synchronized(updateLock) {
-                            updateLock.notifyAll()
+        val indexListenerStream = indexHandler.subscribeToOnIndexRecordAcquiredEvents()
+        GlobalScope.launch {
+            indexListenerStream.consumeEach { (indexFolderId, newRecords, _) ->
+                if (indexFolderId == folderId) {
+                    for (fileInfo2 in newRecords) {
+                        if (fileInfo2.path == targetPath && fileInfo2.hash == dataSource.getHash()) { //TODO check not invalid
+                            //                                sentBlocks.addAll(dataSource.getHashes());
+                            isCompleted.set(true)
+                            synchronized(updateLock) {
+                                updateLock.notifyAll()
+                            }
                         }
                     }
                 }
             }
         }
-        indexHandler.registerOnIndexRecordAcquiredListener(indexListener)
         val indexUpdate = sendIndexUpdate(folderId, BlockExchangeProtos.FileInfo.newBuilder()
                 .setName(targetPath)
                 .setSize(fileSize)
@@ -128,9 +139,27 @@ class BlockPusher(private val localDeviceId: DeviceId,
             override fun close() {
                 logger.debug("closing upload process")
                 monitoringProcessExecutorService.shutdown()
-                indexHandler.unregisterOnIndexRecordAcquiredListener(indexListener)
+                indexListenerStream.cancel()
                 requestHandlerRegistry.unregisterListener(requestFilter)
-                val fileInfo1 = indexHandler.pushRecord(indexUpdate.folder, indexUpdate.filesList.single())
+                val (fileInfo1, folderStatsUpdate) = indexHandler.indexRepository.runInTransaction {
+                    val folderStatsUpdateCollector = FolderStatsUpdateCollector(folderId)
+
+                    // TODO: notify the IndexBrowsers again (as it was earlier)
+                    val fileInfo = IndexElementProcessor.pushRecord(
+                            it,
+                            indexUpdate.folder,
+                            indexUpdate.filesList.single(),
+                            folderStatsUpdateCollector,
+                            it.findFileInfo(folderId, indexUpdate.filesList.single().name)
+                    )
+
+                    IndexMessageProcessor.handleFolderStatsUpdate(it, folderStatsUpdateCollector)
+                    val folderStatsUpdate = it.findFolderStats(folderId) ?: FolderStats.createDummy(folderId)
+
+                    fileInfo to folderStatsUpdate
+                }
+
+                runBlocking { indexHandler.sendFolderStatsUpdate(folderStatsUpdate) }
                 logger.info("sent file info record = {}", fileInfo1)
             }
 
@@ -151,7 +180,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
     private suspend fun sendIndexUpdate(folderId: String, fileInfoBuilder: BlockExchangeProtos.FileInfo.Builder,
                                         oldVersions: Iterable<Version>?): BlockExchangeProtos.IndexUpdate {
         run {
-            val nextSequence = indexHandler.sequencer().nextSequence()
+            val nextSequence = indexHandler.getNextSequenceNumber()
             val list = oldVersions ?: emptyList()
             logger.debug("version list = {}", list)
             val id = ByteBuffer.wrap(localDeviceId.toHashData()).long
