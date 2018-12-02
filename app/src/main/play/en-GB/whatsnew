@@ -1,3 +1,1 @@
-- new connection handling
-- option for users to get detailed crash reports
-- bugfixes
+- new (faster) index handling
