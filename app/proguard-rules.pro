@@ -28,6 +28,9 @@
   volatile <fields>;
 }
 
+# fix detecting the main dispatcher
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+
 # disable warnings
 -dontwarn com.google.protobuf.UnsafeUtil
 -dontwarn com.google.protobuf.UnsafeUtil$1
