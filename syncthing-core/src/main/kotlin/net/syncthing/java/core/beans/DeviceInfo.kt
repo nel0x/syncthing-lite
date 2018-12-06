@@ -16,8 +16,9 @@ package net.syncthing.java.core.beans
 
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
+import java.io.Serializable
 
-data class DeviceInfo(val deviceId: DeviceId, val name: String, val isConnected: Boolean? = null) {
+data class DeviceInfo(val deviceId: DeviceId, val name: String): Serializable {
 
     companion object {
         private const val DEVICE_ID = "deviceId"
@@ -43,9 +44,6 @@ data class DeviceInfo(val deviceId: DeviceId, val name: String, val isConnected:
             )
         }
     }
-
-    constructor(deviceId: DeviceId, name: String?) :
-            this(deviceId, if (name != null && !name.isBlank()) name else deviceId.shortId, null)
 
     fun serialize(writer: JsonWriter) {
         writer.beginObject()
