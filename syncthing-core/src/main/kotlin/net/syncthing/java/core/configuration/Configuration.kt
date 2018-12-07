@@ -2,6 +2,12 @@ package net.syncthing.java.core.configuration
 
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonWriter
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import net.syncthing.java.core.beans.DeviceId
 import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.java.core.beans.FolderInfo
@@ -17,6 +23,8 @@ import java.util.*
 class Configuration(configFolder: File = DefaultConfigFolder) {
 
     private val logger = LoggerFactory.getLogger(javaClass)
+    private val modifyLock = Mutex()
+    private val saveLock = Mutex()
 
     private val configFile = File(configFolder, ConfigFileName)
     val databaseFolder = File(configFolder, DatabaseFolderName)
@@ -44,7 +52,7 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
                     customDiscoveryServers = emptySet(),
                     useDefaultDiscoveryServers = true
             )
-            persistNow()
+            runBlocking { persistNow() }
         } else {
             config = Config.parse(JsonReader(StringReader(configFile.readText())))
         }
@@ -78,51 +86,64 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
     val peerIds: Set<DeviceId>
         get() = config.peers.map { it.deviceId }.toSet()
 
-    var localDeviceName: String
+    val localDeviceName: String
         get() = config.localDeviceName
-        set(localDeviceName) {
-            config = config.copy(localDeviceName = localDeviceName)
-            isSaved = false
-        }
 
-    var folders: Set<FolderInfo>
+    val folders: Set<FolderInfo>
         get() = config.folders
-        set(folders) {
-            config = config.copy(folders = folders)
-            isSaved = false
-        }
 
-    var peers: Set<DeviceInfo>
+    val peers: Set<DeviceInfo>
         get() = config.peers
-        set(peers) {
-            config = config.copy(peers = peers)
-            isSaved = false
-        }
 
-    fun persistNow() {
+    suspend fun update(operation: suspend (Config) -> Config): Boolean {
+        modifyLock.withLock {
+            val oldConfig = config
+            val newConfig = operation(config)
+
+            if (oldConfig != newConfig) {
+                config = newConfig
+                isSaved = false
+
+                return true
+            } else {
+                return false
+            }
+        }
+    }
+
+    suspend fun persistNow() {
         persist()
     }
 
     fun persistLater() {
-        Thread { persist() }.start()
+        GlobalScope.launch (Dispatchers.IO) { persist() }
     }
 
-    private fun persist() {
-        if (isSaved)
-            return
+    private suspend fun persist() {
+        saveLock.withLock {
+            val (config1, isConfig1Saved) = modifyLock.withLock { config to isSaved }
 
-        config.let {
+            if (isConfig1Saved) {
+                return
+            }
+
             System.out.println("writing config to $configFile")
+
             configFile.writeText(
                     StringWriter().apply {
                         JsonWriter(this).apply {
                             setIndent("  ")
 
-                            config.serialize(this)
+                            config1.serialize(this)
                         }
                     }.toString()
             )
-            isSaved = true
+
+            modifyLock.withLock {
+                if (config1 === config) {
+                    isSaved = true
+                }
+            }
         }
     }
 
