@@ -51,4 +51,5 @@ fi stocate, dacă vor fi partajate cu terțe entități precum și cum vor fi
     <string name="settings_shutdown_delay_30_seconds">30 secunde</string>
     <string name="settings_shutdown_delay_1_minute">1 minut</string>
     <string name="settings_shutdown_delay_5_minutes">5 minute</string>
-</resources>
+    <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
+    </resources>

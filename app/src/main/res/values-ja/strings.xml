@@ -41,4 +41,5 @@
     <string name="settings_local_device_name">ローカルのデバイス名</string>
     <string name="settings_local_device_summary">他のデバイスがこのデバイスを表示する名前</string>
     <string name="device_id_dialog_title">デバイス ID を入力</string>
+    <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
     </resources>

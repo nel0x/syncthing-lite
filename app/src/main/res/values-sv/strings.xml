@@ -47,4 +47,5 @@
     <string name="settings_shutdown_delay_30_seconds">30 sekunder</string>
     <string name="settings_shutdown_delay_1_minute">1 minut</string>
     <string name="settings_shutdown_delay_5_minutes">5 minuter</string>
-</resources>
+    <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
+    </resources>
