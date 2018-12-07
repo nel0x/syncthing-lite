@@ -2,12 +2,15 @@ package net.syncthing.lite.library
 
 import android.content.Context
 import android.util.Log
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import net.syncthing.java.client.SyncthingClient
 import net.syncthing.java.core.configuration.Configuration
+import net.syncthing.java.core.exception.ExceptionReport
 import net.syncthing.repository.android.SqliteIndexRepository
 import net.syncthing.repository.android.TempDirectoryLocalRepository
 import net.syncthing.repository.android.database.RepositoryDatabase
-import org.jetbrains.anko.defaultSharedPreferences
 import java.io.File
 import java.net.DatagramSocket
 import java.net.InetAddress
@@ -22,7 +25,10 @@ import java.net.SocketException
  *
  * The creation and the shutdown are synchronous, so keep them out of the UI Thread
  */
-class LibraryInstance (context: Context) {
+class LibraryInstance (
+        context: Context,
+        private val exceptionReportHandler: (ExceptionReport) -> Unit
+) {
     companion object {
         private const val LOG_TAG = "LibraryInstance"
 
@@ -55,7 +61,13 @@ class LibraryInstance (context: Context) {
                     clearTempStorageHook = { tempRepository.deleteAllData() }
             ),
             tempRepository = tempRepository,
-            enableDetailedException = context.defaultSharedPreferences.getBoolean("detailed_exception", false)
+            exceptionReportHandler = { ex ->
+                Log.w(LOG_TAG, "${ex.component}\n${ex.detailsReadableString}\n${Log.getStackTraceString(ex.exception)}")
+
+                GlobalScope.launch (Dispatchers.Main) {
+                    exceptionReportHandler(ex)
+                }
+            }
     )
     val folderBrowser = syncthingClient.indexHandler.folderBrowser
     val indexBrowser = syncthingClient.indexHandler.indexBrowser
