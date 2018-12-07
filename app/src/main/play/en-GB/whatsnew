@@ -1,1 +1,10 @@
-- fix crash after launch in release builds
+- showing more detailed connection status in the device list
+- selective folder sharing (after this update, you have to confirm each folder once)
+- better error handling
+- bugfixes
+  - fix crash if mime type of a file can not be determined
+  - fix crash in the intro at the second step after a screen rotation
+- internal changes
+  - updated build tools and some dependencies
+  - locks for changing and saving the configuration
+  - removed old connection status change listening API
