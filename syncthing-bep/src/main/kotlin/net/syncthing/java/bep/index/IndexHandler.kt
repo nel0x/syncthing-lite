@@ -14,8 +14,10 @@
  */
 package net.syncthing.java.bep.index
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.consume
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import net.syncthing.java.bep.BlockExchangeProtos
 import net.syncthing.java.bep.connectionactor.ClusterConfigInfo
@@ -33,8 +35,6 @@ import org.slf4j.LoggerFactory
 import java.io.Closeable
 import java.io.IOException
 
-data class IndexRecordAcquiredEvent(val folderId: String, val files: List<FileInfo>, val indexInfo: IndexInfo)
-
 class IndexHandler(
         configuration: Configuration,
         val indexRepository: IndexRepository,
@@ -42,28 +42,33 @@ class IndexHandler(
         exceptionReportHandler: (ExceptionReport) -> Unit
 ) : Closeable {
     private val logger = LoggerFactory.getLogger(javaClass)
-    private val onIndexRecordAcquiredEvents = BroadcastChannel<IndexRecordAcquiredEvent>(capacity = 16)
+    private val indexInfoUpdateEvents = BroadcastChannel<IndexInfoUpdateEvent>(capacity = 16)
     private val onFullIndexAcquiredEvents = BroadcastChannel<String>(capacity = 16)
-    private val onFolderStatsUpdatedEvents = BroadcastChannel<FolderStats>(capacity = 16)
+    private val onFolderStatsUpdatedEvents = BroadcastChannel<FolderStatsChangedEvent>(capacity = 16)
 
     private val indexMessageProcessor = IndexMessageQueueProcessor(
             indexRepository = indexRepository,
             tempRepository = tempRepository,
             isRemoteIndexAcquired = ::isRemoteIndexAcquired,
-            onIndexRecordAcquiredEvents = onIndexRecordAcquiredEvents,
+            onIndexRecordAcquiredEvents = indexInfoUpdateEvents,
             onFullIndexAcquiredEvents = onFullIndexAcquiredEvents,
             onFolderStatsUpdatedEvents = onFolderStatsUpdatedEvents,
             exceptionReportHandler = exceptionReportHandler
     )
 
     fun subscribeToOnFullIndexAcquiredEvents() = onFullIndexAcquiredEvents.openSubscription()
-    fun subscribeToOnIndexRecordAcquiredEvents() = onIndexRecordAcquiredEvents.openSubscription()
+    fun subscribeToOnIndexUpdateEvents() = indexInfoUpdateEvents.openSubscription()
     fun subscribeFolderStatsUpdatedEvents() = onFolderStatsUpdatedEvents.openSubscription()
 
     fun getNextSequenceNumber() = indexRepository.runInTransaction { it.getSequencer().nextSequence() }
 
-    fun clearIndex() {
-        indexRepository.runInTransaction { it.clearIndex() }
+    suspend fun clearIndex() {
+        withContext(Dispatchers.IO) {
+            indexRepository.runInTransaction { it.clearIndex() }
+        }
+
+        onFolderStatsUpdatedEvents.send(FolderStatsResetEvent)
+        indexInfoUpdateEvents.send(IndexInfoClearedEvent)
     }
 
     private fun isRemoteIndexAcquiredWithoutTransaction(clusterConfigInfo: ClusterConfigInfo, peerDeviceId: DeviceId): Boolean {
@@ -135,7 +140,7 @@ class IndexHandler(
         }
 
         updatedIndexInfos.forEach {
-            onIndexRecordAcquiredEvents.send(
+            indexInfoUpdateEvents.send(
                     IndexRecordAcquiredEvent(
                             folderId = it.folderId,
                             indexInfo = it,
@@ -176,11 +181,11 @@ class IndexHandler(
     val indexBrowser = IndexBrowser(indexRepository, this)
 
     suspend fun sendFolderStatsUpdate(event: FolderStats) {
-        onFolderStatsUpdatedEvents.send(event)
+        onFolderStatsUpdatedEvents.send(FolderStatsUpdatedEvent(event))
     }
 
     override fun close() {
-        onIndexRecordAcquiredEvents.close()
+        indexInfoUpdateEvents.close()
         onFullIndexAcquiredEvents.close()
         indexMessageProcessor.stop()
     }

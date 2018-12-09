@@ -21,7 +21,7 @@ import kotlinx.coroutines.channels.first
 import kotlinx.coroutines.channels.produce
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
-import net.syncthing.java.bep.index.IndexHandler
+import net.syncthing.java.bep.index.*
 import net.syncthing.java.core.beans.FolderStats
 import net.syncthing.java.core.configuration.Configuration
 import java.io.Closeable
@@ -35,7 +35,7 @@ class FolderBrowser internal constructor(private val indexHandler: IndexHandler,
             // get initial status
             val currentFolderStats = mutableMapOf<String, FolderStats>()
 
-            var currentIndexInfo = withContext(Dispatchers.IO) {
+            val currentIndexInfo = withContext(Dispatchers.IO) {
                 indexHandler.indexRepository.runInTransaction { indexTransaction ->
                     configuration.folders.map { it.folderId }.forEach { folderId ->
                         currentFolderStats[folderId] = indexTransaction.findFolderStats(folderId) ?: FolderStats.createDummy(folderId)
@@ -64,9 +64,12 @@ class FolderBrowser internal constructor(private val indexHandler: IndexHandler,
             val updateLock = Mutex()
 
             async {
-                indexHandler.subscribeFolderStatsUpdatedEvents().consumeEach { folderStats ->
+                indexHandler.subscribeFolderStatsUpdatedEvents().consumeEach { event ->
                     updateLock.withLock {
-                        currentFolderStats[folderStats.folderId] = folderStats
+                        when (event) {
+                            is FolderStatsUpdatedEvent -> currentFolderStats[event.folderStats.folderId] = event.folderStats
+                            FolderStatsResetEvent -> currentFolderStats.clear()
+                        }.let { /* require that all cases are handled */ }
 
                         dispatch()
                     }
@@ -74,14 +77,26 @@ class FolderBrowser internal constructor(private val indexHandler: IndexHandler,
             }
 
             async {
-                indexHandler.subscribeToOnIndexRecordAcquiredEvents().consumeEach { event ->
+                indexHandler.subscribeToOnIndexUpdateEvents().consumeEach { event ->
                     updateLock.withLock {
-                        val oldList = currentIndexInfo[event.folderId] ?: emptyList()
-                        val newList = oldList.filter { it.deviceId != event.indexInfo.deviceId } + event.indexInfo
-                        currentIndexInfo[event.folderId] = newList
+                        when (event) {
+                            is IndexRecordAcquiredEvent -> {
+                                val oldList = currentIndexInfo[event.folderId] ?: emptyList()
+                                val newList = oldList.filter { it.deviceId != event.indexInfo.deviceId } + event.indexInfo
+
+                                currentIndexInfo[event.folderId] = newList
+                            }
+                            IndexInfoClearedEvent -> currentIndexInfo.clear()
+                        }.let { /* require that all cases are handled */ }
 
                         dispatch()
                     }
+                }
+            }
+
+            async {
+                configuration.subscribe().consumeEach {
+                    dispatch()
                 }
             }
         }
