@@ -12,6 +12,6 @@ object MimeType {
     }
 
     fun getFromUrl(url: String) = getFromExtension(
-            MimeTypeMap.getFileExtensionFromUrl(url)
+            MimeTypeMap.getFileExtensionFromUrl(url).toLowerCase()
     )
 }
