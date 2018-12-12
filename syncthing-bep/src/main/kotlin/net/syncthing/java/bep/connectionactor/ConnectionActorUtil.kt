@@ -16,6 +16,7 @@ package net.syncthing.java.bep.connectionactor
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.channels.SendChannel
 import net.syncthing.java.bep.BlockExchangeProtos
+import java.io.IOException
 
 object ConnectionActorUtil {
     suspend fun waitUntilConnected(actor: SendChannel<ConnectionAction>): ClusterConfigInfo {
@@ -28,22 +29,34 @@ object ConnectionActorUtil {
     }
 
     suspend fun sendRequest(request: BlockExchangeProtos.Request, actor: SendChannel<ConnectionAction>): BlockExchangeProtos.Response {
-        val deferred = CompletableDeferred<BlockExchangeProtos.Response>()
+        try {
+            val deferred = CompletableDeferred<BlockExchangeProtos.Response>()
 
-        actor.send(SendRequestConnectionAction(request, deferred))
+            actor.send(SendRequestConnectionAction(request, deferred))
 
-        return deferred.await()
+            return deferred.await()
+        } catch (ex: Exception) {
+            throw IOException("not connected", ex)
+        }
     }
 
     suspend fun sendIndexUpdate(update: BlockExchangeProtos.IndexUpdate, actor: SendChannel<ConnectionAction>) {
-        val deferred = CompletableDeferred<Unit?>()
+        try {
+            val deferred = CompletableDeferred<Unit?>()
 
-        actor.send(SendIndexUpdateAction(update, deferred))
+            actor.send(SendIndexUpdateAction(update, deferred))
 
-        deferred.await()
+            deferred.await()
+        } catch (ex: Exception) {
+            throw IOException("not connected", ex)
+        }
     }
 
     suspend fun disconnect(actor: SendChannel<ConnectionAction>) {
-        actor.send(CloseConnectionAction)
+        try {
+            actor.send(CloseConnectionAction)
+        } catch (ex: Exception) {
+            // ignore if the channel is closed already
+        }
     }
 }
