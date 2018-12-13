@@ -36,16 +36,42 @@
     <string name="intro_page_three_title">Dela dina mappar</string>
     <string name="intro_page_two_description">Ange ett Syncthing enhets-ID, eller skanna ett enhets-ID-nummer från en QR-kod</string>
     <string name="intro_page_three_description">Acceptera nu enheten med ID %1$s och dela en mapp med den. Det kan ta några minuter tills enheterna ansluter.</string>
+    <string name="intro_page_three_searching_device">Försöker hitta den andra enheten. Det kan ta ett ögonblick.</string>
     <string name="settings">Inställningar</string>
     <string name="settings_app_version_title">Appversion</string>
     <string name="settings_local_device_name">Lokala enhetens namn</string>
     <string name="settings_local_device_summary">Namnet som andra enheter kommer att se för den här enheten</string>
     <string name="settings_shutdown_delay_title">Avstängningsfördröjning</string>
     <string name="settings_shutdown_delay_summary">Tid innan du stänger av Syncthing-klienten efter den senaste användningen</string>
+    <string name="settings_force_stop">Tvinga stoppa denna App</string>
+    <string name="settings_last_error_title">Senaste felet</string>
+    <string name="settings_last_error_summary">Visa detaljerna för det senaste felet</string>
+    <string name="settings_report_bug_title">Rapportera ett fel</string>
+    <string name="settings_report_bug_summary">Öppna problemen för den här appen på GitHub</string>
+    <string name="copy_to_clipboard">Kopiera till urklipp</string>
+    <string name="copied_to_clipboard">Kopieras till urklippet</string>
     <string name="device_id_dialog_title">Ange enhets-ID</string>
     <string name="settings_shutdown_delay_10_seconds">10 sekunder</string>
     <string name="settings_shutdown_delay_30_seconds">30 sekunder</string>
     <string name="settings_shutdown_delay_1_minute">1 minut</string>
     <string name="settings_shutdown_delay_5_minutes">5 minuter</string>
+    <string name="dialog_warning_reconnect_problem">
+        På grund av beteendet hos denna App och beteendet hos Syncthing-servern,
+        du kan inte återansluta i några minuter om appen dödades (på grund av att du tog bort från den senaste applistan)
+        eller anslutningen avbröts.
+        Detta gäller inte lokala upptäcktsanslutningar.
+   </string>
+    <string name="dialog_file_save_as">Spara som</string>
+    <string name="pending_index_updates">%d indexuppdateringar som väntar</string>
+    <string name="device_status_connecting">Ansluter till %s</string>
+    <string name="device_status_connected">Ansluten till %s</string>
+    <string name="device_status_disconnected">Kommer att försöka ansluta snart - det finns%d kända adresser</string>
+    <string name="device_status_no_address">Ingen känd adress för enheten</string>
+    <string name="dialog_enable_folder_sync_for_new_device_title">Aktivera mappsynkronisering för ny enhet</string>
+    <string name="dialog_enable_folder_sync_for_new_device_text">Vill du synkronisera %1$s med %2$s (%3$s)?</string>
+    <string name="dialog_enable_folder_sync_for_new_device_positive">Synkronisera</string>
+    <string name="dialog_enable_folder_sync_for_new_device_negative">Synkronisera inte</string>
+    <string name="dialog_folder_info_device_list">Dela mapp med:</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
-    </resources>
+    <string name="toast_error">Något gick fel i Syncthing Lite. Du kan visa detaljerna från inställningarna för Syncthing Lite.</string>
+</resources>
