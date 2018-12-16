@@ -1,7 +1,1 @@
-- update translations
-- encrypt some temporarily data which is stored on disk
-- update path validation
-- fix crash when cleaning the cache
-- fix crash of the index handler after cleaning the cache
-- convert file extensions to lower case for detecting Apps to open it
-- fix crash when accessing (e.g. trying to close) closed connections
+- fix file type detection for file names with umlauts and/ or spaces
