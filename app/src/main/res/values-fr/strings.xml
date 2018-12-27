@@ -36,16 +36,27 @@
     <string name="intro_page_three_title">Partager vos dossiers</string>
     <string name="intro_page_two_description">Entrer l\'ID Syncthing de l\'appareil, ou scanner le QR code de l\'ID d\'un appareil.</string>
     <string name="intro_page_three_description">Maintenant, acceptez l\'appareil avec l\'ID %1$s, et partagez un dossier avec lui. Cela peut prendre quelques minutes avant que les appareils ne se connectent.</string>
+    <string name="intro_page_three_searching_device">Essayer de trouver l\'autre appareil. Cela peut prendre un moment.</string>
     <string name="settings">Réglages</string>
     <string name="settings_app_version_title">Version d\'application</string>
     <string name="settings_local_device_name">Nom local de l\'appareil</string>
     <string name="settings_local_device_summary">Le nom que les autres appareils verront pour cet appareil</string>
     <string name="settings_shutdown_delay_title">Délai d\'arrêt</string>
     <string name="settings_shutdown_delay_summary">Délai avant d\'arrêter le client Syncthing après sa dernière utilisation</string>
+    <string name="settings_force_stop">Forcer l\'arrêt de cette application</string>
+    <string name="settings_last_error_title">Dernière erreur</string>
+    <string name="settings_last_error_summary">Voir les détails de la dernière erreur</string>
+    <string name="settings_report_bug_title">Rapporter un bug</string>
+    <string name="settings_report_bug_summary">Ouvrir un incident pour cette application sur GitHub</string>
+    <string name="copy_to_clipboard">Copier dans le presse-papiers</string>
+    <string name="copied_to_clipboard">Copié dans le presse-papiers</string>
     <string name="device_id_dialog_title">Entrer l\'ID de l\'appareil</string>
     <string name="settings_shutdown_delay_10_seconds">10 secondes</string>
     <string name="settings_shutdown_delay_30_seconds">30 secondes</string>
     <string name="settings_shutdown_delay_1_minute">1 minute</string>
     <string name="settings_shutdown_delay_5_minutes">5 minutes</string>
+    <string name="dialog_file_save_as">Enregistrer sous</string>
+    <string name="pending_index_updates">%d mises à jour d\'index en attente</string>
+    <string name="device_status_connecting">Connexion à %s</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
     </resources>
