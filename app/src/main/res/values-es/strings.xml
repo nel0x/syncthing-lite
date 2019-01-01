@@ -43,7 +43,6 @@
     <string name="settings_local_device_name">Nombre del dispositivo local</string>
     <string name="settings_local_device_summary">El nombre que otros dispositivos verán para este dispositivo</string>
     <string name="settings_shutdown_delay_title">Retardo en el apagado</string>
-    <string name="settings_shutdown_delay_summary">Tiempo antes de apagar el cliente Syncthing después de su último uso</string>
     <string name="device_id_dialog_title">Introducir la ID del dispositivo</string>
     <string name="settings_shutdown_delay_10_seconds">10 segundos</string>
     <string name="settings_shutdown_delay_30_seconds">30 segundos</string>

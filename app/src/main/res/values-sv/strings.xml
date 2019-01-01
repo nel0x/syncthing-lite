@@ -42,7 +42,6 @@
     <string name="settings_local_device_name">Lokala enhetens namn</string>
     <string name="settings_local_device_summary">Namnet som andra enheter kommer att se för den här enheten</string>
     <string name="settings_shutdown_delay_title">Avstängningsfördröjning</string>
-    <string name="settings_shutdown_delay_summary">Tid innan du stänger av Syncthing-klienten efter den senaste användningen</string>
     <string name="settings_force_stop">Tvinga stoppa denna App</string>
     <string name="settings_last_error_title">Senaste felet</string>
     <string name="settings_last_error_summary">Visa detaljerna för det senaste felet</string>

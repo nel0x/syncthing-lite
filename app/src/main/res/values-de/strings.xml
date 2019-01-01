@@ -42,7 +42,6 @@
     <string name="settings_local_device_name">Lokaler Gerätenamen</string>
     <string name="settings_local_device_summary">Name, den das andere Gerät für dieses Gerät sehen wird</string>
     <string name="settings_shutdown_delay_title">Ausschaltverzögerung</string>
-    <string name="settings_shutdown_delay_summary">Zeit vor dem Herunterfahren des Syncthing-Clients nach seiner letzten Nutzung</string>
     <string name="settings_force_stop">Beenden dieser App erzwingen</string>
     <string name="settings_last_error_title">Letzter Fehler</string>
     <string name="settings_last_error_summary">Details des letzten Fehlers anzeigen</string>
