@@ -4,7 +4,7 @@
     <string name="clear_local_cache_index_label">Limpia caché/índice local</string>
     <string name="devices_list_view_empty_message">Dispositivos no disponibles</string>
     <string name="invalid_device_id">Error: identificador de dispositivo inválido</string>
-    <string name="dialog_downloading_file">Descargando archivo%1$s</string>
+    <string name="dialog_downloading_file">Descargando archivo %1$s</string>
     <string name="toast_file_download_failed">Falló al descargar el archivo</string>
     <string name="toast_open_file_failed">No se ha encontrado una app compatible</string>
     <string name="toast_file_upload_failed">Error en la carga de archivos
@@ -38,15 +38,42 @@
     <string name="intro_page_three_title">Compartir tus carpetas</string>
     <string name="intro_page_two_description">Introduce un ID de dispositivo de Syncthing o escanea un ID de dispositivo desde un código QR</string>
     <string name="intro_page_three_description">Acepta ahora el dispositivo con ID %1$s, y comparte una carpeta con él. Pueden pasar unos minutos hasta que los dispositivos se conecten.</string>
+    <string name="intro_page_three_searching_device">Intentando encontrar el otro dispositivo. Puede llevar un rato</string>
     <string name="settings">Configuración</string>
     <string name="settings_app_version_title">Versión de la aplicación</string>
     <string name="settings_local_device_name">Nombre del dispositivo local</string>
     <string name="settings_local_device_summary">El nombre que otros dispositivos verán para este dispositivo</string>
     <string name="settings_shutdown_delay_title">Retardo en el apagado</string>
+    <string name="settings_shutdown_delay_summary">Tiempo antes de que el cliente de Syncthing se cierre después de su último uso</string>
+    <string name="settings_force_stop">Fuerza a parar esta aplicación</string>
+    <string name="settings_last_error_title">Último error</string>
+    <string name="settings_last_error_summary">Ver los detalles del último error</string>
+    <string name="settings_report_bug_title">Informar de un error</string>
+    <string name="settings_report_bug_summary">Abrir las incidencias de esta aplicación en GitHub</string>
+    <string name="copy_to_clipboard">Copiar al portapapeles</string>
+    <string name="copied_to_clipboard">Copiado al portapapeles</string>
     <string name="device_id_dialog_title">Introducir la ID del dispositivo</string>
     <string name="settings_shutdown_delay_10_seconds">10 segundos</string>
     <string name="settings_shutdown_delay_30_seconds">30 segundos</string>
     <string name="settings_shutdown_delay_1_minute">1 minuto</string>
     <string name="settings_shutdown_delay_5_minutes">5 minutos</string>
+    <string name="dialog_warning_reconnect_problem">
+Debido al comportamiento de esta aplicación y al comportamiento del servidor de Syncthing, 
+        no puedes volver a conectar durante unos minutos si la aplicación fue cancelada (debido a la eliminación de la lista de aplicaciones recientes)
+        O la conexión fue interrumpida.
+        Esto no aplica a las conexiones de descubrimiento local.
+</string>
+    <string name="dialog_file_save_as">Guardar como</string>
+    <string name="pending_index_updates">%d actualizaciones de índice pendientes</string>
+    <string name="device_status_connecting">Conectando a %s</string>
+    <string name="device_status_connected">Conectado a %s</string>
+    <string name="device_status_disconnected">Volverá a conectar pronto - hay %d direcciones conocidas</string>
+    <string name="device_status_no_address">Sin dirección conocida para el dispositivo</string>
+    <string name="dialog_enable_folder_sync_for_new_device_title">Activar sincronización para el nuevo dispositivo</string>
+    <string name="dialog_enable_folder_sync_for_new_device_text">¿Quieres sincronizar %1$s con %2$s (%3$s)?</string>
+    <string name="dialog_enable_folder_sync_for_new_device_positive">Sincronizar</string>
+    <string name="dialog_enable_folder_sync_for_new_device_negative">No sincronización</string>
+    <string name="dialog_folder_info_device_list">Compartir la carpeta con:</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
-    </resources>
+    <string name="toast_error">Algo salió mal en Syncthing Lite. Puedes ver los detalles en la configuración de Syncthing Lite.</string>
+</resources>

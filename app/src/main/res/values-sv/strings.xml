@@ -42,13 +42,14 @@
     <string name="settings_local_device_name">Lokala enhetens namn</string>
     <string name="settings_local_device_summary">Namnet som andra enheter kommer att se för den här enheten</string>
     <string name="settings_shutdown_delay_title">Avstängningsfördröjning</string>
+    <string name="settings_shutdown_delay_summary">Tid innan du stänger av Syncthing-klienten efter den senaste användningen</string>
     <string name="settings_force_stop">Tvinga stoppa denna App</string>
     <string name="settings_last_error_title">Senaste felet</string>
     <string name="settings_last_error_summary">Visa detaljerna för det senaste felet</string>
     <string name="settings_report_bug_title">Rapportera ett fel</string>
     <string name="settings_report_bug_summary">Öppna problemen för den här appen på GitHub</string>
     <string name="copy_to_clipboard">Kopiera till urklipp</string>
-    <string name="copied_to_clipboard">Kopieras till urklippet</string>
+    <string name="copied_to_clipboard">Kopierad till urklipp</string>
     <string name="device_id_dialog_title">Ange enhets-ID</string>
     <string name="settings_shutdown_delay_10_seconds">10 sekunder</string>
     <string name="settings_shutdown_delay_30_seconds">30 sekunder</string>
