@@ -16,7 +16,7 @@
     <string name="loading_config_starting_syncthing_client">Configuratie wordt geladen, Syncthing-cliënt wordt opgestart…</string>
     <string name="last_modified_time">Laatst gewijzigd: %1$s</string>
     <string name="remove_device_title">Apparaat %1$s verwijderen?</string>
-    <string name="remove_device_message">%1$s verwijderen uit de lijst van gekende apparaten?</string>
+    <string name="remove_device_message">%1$s verwijderen uit de lijst van bekende apparaten?</string>
     <string name="device_import_success">Apparaat %1$s geïmporteerd</string>
     <string name="device_already_known">Apparaat %1$s reeds aanwezig</string>
     <string name="folders_label">Mappen</string>
@@ -36,10 +36,42 @@
     <string name="intro_page_three_title">Deel je mappen</string>
     <string name="intro_page_two_description">Voer een Syncthing-apparaats-ID in, of scan een apparaats-ID van een QR-code</string>
     <string name="intro_page_three_description">Accepteer nu het apparaat met ID %1$s, en deel er een map mee. Het kan enkele minuten duren voordat de apparaten verbinden.</string>
+    <string name="intro_page_three_searching_device">Proberen het andere apparaat te vinden. Dit kan even duren.</string>
     <string name="settings">Instellingen</string>
     <string name="settings_app_version_title">Appversie</string>
     <string name="settings_local_device_name">Naam van lokaal apparaat</string>
     <string name="settings_local_device_summary">De naam die andere apparaten voor dit apparaat zullen zien</string>
+    <string name="settings_shutdown_delay_title">Wachten voor afsluiten</string>
+    <string name="settings_shutdown_delay_summary">Tijdsduur vóór afsluiten van Syncthing-cliënt na laatste gebruik</string>
+    <string name="settings_force_stop">Deze app gedwongen afsluiten</string>
+    <string name="settings_last_error_title">Laatste fout</string>
+    <string name="settings_last_error_summary">Bekijk de details van de laatste fout</string>
+    <string name="settings_report_bug_title">Fout melden</string>
+    <string name="settings_report_bug_summary">Open de foutrapportages voor deze app op GitHub</string>
+    <string name="copy_to_clipboard">Kopiëren naar klembord</string>
+    <string name="copied_to_clipboard">Gekopieerd naar klembord</string>
     <string name="device_id_dialog_title">Voer een apparaats-ID in</string>
+    <string name="settings_shutdown_delay_10_seconds">10 seconden</string>
+    <string name="settings_shutdown_delay_30_seconds">30 seconden</string>
+    <string name="settings_shutdown_delay_1_minute">1 minuut</string>
+    <string name="settings_shutdown_delay_5_minutes">5 minuten</string>
+    <string name="dialog_warning_reconnect_problem">
+        Door het gedrag van deze app en het gedrag van de Syncthing-server,
+        kan je enkele minuten geen verbinding maken indien de app werd afgesloten (door deze uit de lijst met recente apps te verwijderen)
+        of indien de verbinding werd verbroken.
+        Dit is niet van toepassing op lokale ontdekkingsverbindingen.
+    </string>
+    <string name="dialog_file_save_as">Opslaan als</string>
+    <string name="pending_index_updates">%d indexupdates in wacht</string>
+    <string name="device_status_connecting">Verbinden met %s</string>
+    <string name="device_status_connected">Verbonden met %s</string>
+    <string name="device_status_disconnected">Zal binnenkort opnieuw proberen verbinden - er zijn %d bekende adressen</string>
+    <string name="device_status_no_address">Geen bekend adres voor het apparaat</string>
+    <string name="dialog_enable_folder_sync_for_new_device_title">Mapsynchonisatie inschakelen voor apparaat</string>
+    <string name="dialog_enable_folder_sync_for_new_device_text">Wil je %1$s synchroniseren met %2$s (%3$s)?</string>
+    <string name="dialog_enable_folder_sync_for_new_device_positive">Synchroniseren</string>
+    <string name="dialog_enable_folder_sync_for_new_device_negative">Niet synchroniseren</string>
+    <string name="dialog_folder_info_device_list">Map delen met:</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
-    </resources>
+    <string name="toast_error">Er ging iets mis in Syncthing Lite. Je kan de details van de instellingen van Syncthing Lite bekijken.</string>
+</resources>

@@ -24,7 +24,7 @@
     <string name="folders_label">Carpetas</string>
     <string name="devices_label">Dispositivos</string>
     <string name="folder_label_format">%1$s (%2$s)</string>
-    <string name="folder_content_info">%1$s, %2$d archivos, %3$ddirectorios</string>
+    <string name="folder_content_info">%1$s, %2$d archivos, %3$d directorios</string>
     <string name="file_info">%1$s, modificado por última vez %2$s</string>
     <string name="show_device_id">Mostrar ID de dispositivo </string>
     <string name="device_id">ID de dispositivo</string>
