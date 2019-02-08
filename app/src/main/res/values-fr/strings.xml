@@ -42,6 +42,7 @@
     <string name="settings_local_device_name">Nom local de l\'appareil</string>
     <string name="settings_local_device_summary">Le nom que les autres appareils verront pour cet appareil</string>
     <string name="settings_shutdown_delay_title">Délai d\'arrêt</string>
+    <string name="settings_shutdown_delay_summary">Délai avant d\'arrêter le client Syncthing après sa dernière utilisation</string>
     <string name="settings_force_stop">Forcer l\'arrêt de cette application</string>
     <string name="settings_last_error_title">Dernière erreur</string>
     <string name="settings_last_error_summary">Voir les détails de la dernière erreur</string>
@@ -54,8 +55,21 @@
     <string name="settings_shutdown_delay_30_seconds">30 secondes</string>
     <string name="settings_shutdown_delay_1_minute">1 minute</string>
     <string name="settings_shutdown_delay_5_minutes">5 minutes</string>
+    <string name="dialog_warning_reconnect_problem">En raison du comportement de cette application et du comportement du serveur Syncthing,
+vous ne pouvez pas vous reconnecter pendant quelques minutes si l\'application a été tuée (dû à sa suppression de la liste des applications récentes)
+ou la connexion a été interrompue.
+Cela ne s\'applique pas aux connexions de découverte locales.</string>
     <string name="dialog_file_save_as">Enregistrer sous</string>
     <string name="pending_index_updates">%d mises à jour d\'index en attente</string>
     <string name="device_status_connecting">Connexion à %s</string>
+    <string name="device_status_connected">Connexion à %s</string>
+    <string name="device_status_disconnected">Nous essayerons de vous reconnecter bientôt - Il y a %dadresses connues.</string>
+    <string name="device_status_no_address">Pas d\'adresse connue pour cet appareil</string>
+    <string name="dialog_enable_folder_sync_for_new_device_title">Activer la synchronisation des dossiers pour le nouvel appareil</string>
+    <string name="dialog_enable_folder_sync_for_new_device_text">Voulez-vous synchroniser %1$s avec %2$s (%3$s) ?</string>
+    <string name="dialog_enable_folder_sync_for_new_device_positive">Synchroniser</string>
+    <string name="dialog_enable_folder_sync_for_new_device_negative">Ne pas synchroniser</string>
+    <string name="dialog_folder_info_device_list">Partager le dossier avec:</string>
     <string name="dialog_folder_info_device_list_item">%1$s (%2$s)</string>
-    </resources>
+    <string name="toast_error">Quelque chose s\'est mal passé dans Syncthing Lite. Vous pouvez afficher les détails à partir des paramètres de Syncthing Lite.</string>
+</resources>
