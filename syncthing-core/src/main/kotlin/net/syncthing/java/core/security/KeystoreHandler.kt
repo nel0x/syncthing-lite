@@ -236,7 +236,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         private const val CERTIFICATE_CN = "CN=syncthing"
         private const val KEY_SIZE = 3072
         private const val SOCKET_TIMEOUT = 2000
-        private const val TLS_VERSION = "TLSv1.2"
+        private const val TLS_VERSION = "TLSv1.3"
 
         init {
             Security.addProvider(BouncyCastleProvider())
