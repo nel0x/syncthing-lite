@@ -22,9 +22,9 @@ import net.syncthing.java.core.interfaces.RelayConnection
 import net.syncthing.java.core.security.KeystoreHandler
 import net.syncthing.java.core.utils.NetworkUtils
 import org.apache.commons.io.IOUtils
-import org.bouncycastle.util.encoders.Hex
 import org.slf4j.LoggerFactory
 import org.apache.logging.log4j.util.Unbox.box
+import org.bouncycastle.util.encoders.Hex
 import java.io.*
 import java.net.InetAddress
 import java.net.InetSocketAddress
@@ -102,29 +102,27 @@ class RelayClient(configuration: Configuration) {
                             throw IOException(response.message)
                         }
                         NetworkUtils.assertProtocol(messageReader.type == SESSION_INVITATION, {"message type mismatch, expected $SESSION_INVITATION, got ${messageReader.type}"})
-                        val builder = SessionInvitation.Builder()
-                                .setFrom(DeviceId.fromHashData(messageReader.readLengthAndData()).deviceId)
-                                .setKey(Hex.toHexString(messageReader.readLengthAndData()))
-                            val address = messageReader.readLengthAndData()
-                        if (address.isEmpty()) {
-                            builder.setAddress(socket.inetAddress)
+                        val from = DeviceId.fromHashData(messageReader.readLengthAndData()).deviceId
+                        val key = Hex.toHexString(messageReader.readLengthAndData())
+                        val address = messageReader.readLengthAndData()
+                        val invitationAddress =  if (address.isEmpty()) {
+                            socket.inetAddress
                         } else {
                             val inetAddress = InetAddress.getByAddress(address)
                             if (inetAddress == InetAddress.getByName("0.0.0.0")) {
-                                builder.setAddress(socket.inetAddress)
+                                socket.inetAddress
                             } else {
-                                builder.setAddress(inetAddress)
+                                inetAddress
                             }
                         }
                         val zero = messageReader.buffer.short.toInt()
                         NetworkUtils.assertProtocol(zero == 0, {"expected 0, found $zero"})
                         val port = messageReader.buffer.short.toInt()
                         NetworkUtils.assertProtocol(port > 0, {"got invalid port value = $port"})
-                        builder.setPort(port)
                         val serverSocket = messageReader.buffer.int and 1
-                        builder.setServerSocket(serverSocket == 1)
-                        return builder.build()
+                        val isServerSocket = serverSocket == 1
                         logger.debug("Closing connection (temporary protocol mode).")
+                        return SessionInvitation(from, key, invitationAddress, port, isServerSocket)
                     }
                 }
             }
