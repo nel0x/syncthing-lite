@@ -41,7 +41,6 @@ class IndexHandler(
         tempRepository: TempRepository,
         exceptionReportHandler: (ExceptionReport) -> Unit
 ) : Closeable {
-    private val logger = LoggerFactory.getLogger(javaClass)
     private val indexInfoUpdateEvents = BroadcastChannel<IndexInfoUpdateEvent>(capacity = 16)
     private val onFullIndexAcquiredEvents = BroadcastChannel<String>(capacity = 16)
     private val onFolderStatsUpdatedEvents = BroadcastChannel<FolderStatsChangedEvent>(capacity = 16)
@@ -125,12 +124,12 @@ class IndexHandler(
 
             for (folderRecord in clusterConfig.foldersList) {
                 val folder = folderRecord.id
-                logger.debug("acquired folder info from cluster config = {}", folder)
+                logger.debug("Acquired folder information from the cluster configuration: {}.", folder)
                 for (deviceRecord in folderRecord.devicesList) {
                     val deviceId = DeviceId.fromHashData(deviceRecord.id.toByteArray())
                     if (deviceRecord.hasIndexId() && deviceRecord.hasMaxSequence()) {
                         val folderIndexInfo = UpdateIndexInfo.updateIndexInfoFromClusterConfig(transaction, folder, deviceId, deviceRecord.indexId, deviceRecord.maxSequence)
-                        logger.debug("acquired folder index info from cluster config = {}", folderIndexInfo)
+                        logger.debug("Acquired folder index information from the cluster configuration: {}.", folderIndexInfo)
                         updatedIndexInfos.add(folderIndexInfo)
                     }
                 }
@@ -191,7 +190,7 @@ class IndexHandler(
     }
 
     companion object {
-
+        private val logger = LoggerFactory.getLogger(IndexHandler::class.java)
         private const val DEFAULT_INDEX_TIMEOUT: Long = 30
     }
 }

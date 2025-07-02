@@ -32,11 +32,11 @@ object OpenConnection {
 
         return when (address.type) {
             DeviceAddress.AddressType.TCP -> {
-                logger.debug("opening tcp ssl connection")
+                logger.debug("Opening TCP SSL connection at address {}.", address)
                 keystoreHandler.createSocket(address.getSocketAddress())
             }
             DeviceAddress.AddressType.RELAY -> {
-                logger.debug("opening relay connection")
+                logger.debug("Opening relay connection at relay {}.", address)
                 keystoreHandler.wrapSocket(RelayClient(configuration).openRelayConnection(address))
             }
             else -> throw UnsupportedOperationException("unsupported address type ${address.type}")

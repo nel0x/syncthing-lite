@@ -25,7 +25,7 @@ import java.io.DataOutputStream
 import java.nio.ByteBuffer
 
 object HelloMessageHandler {
-    private val logger = LoggerFactory.getLogger(HelloMessageHandler::class.java)
+private val logger = LoggerFactory.getLogger(HelloMessageHandler::class.java)
 
     fun sendHelloMessage(configuration: Configuration, outputStream: DataOutputStream) {
         sendHelloMessage(
