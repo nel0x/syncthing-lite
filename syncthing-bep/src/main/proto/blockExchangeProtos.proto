@@ -157,7 +157,7 @@ message FileDownloadProgressUpdate {
     FileDownloadProgressUpdateType update_type   = 1;
     string                         name          = 2;
     Vector                         version       = 3;
-    repeated int32                          block_indexes = 4;
+    repeated int32                 block_indexes = 4 [packed=false];
 }
 
 enum FileDownloadProgressUpdateType {
