@@ -134,12 +134,12 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         fun generateKeystore(): Triple<DeviceId, ByteArray, String> {
             val keystoreAlgorithm = getKeystoreAlgorithm(null)
             val keystore = generateKeystore(keystoreAlgorithm)
-            val keystoreHandler = KeystoreHandler(keystore.left)
+            val keystoreHandler = KeystoreHandler(keystore.first)
             val keystoreData = keystoreHandler.exportKeystoreToData()
             val hash = MessageDigest.getInstance("SHA-256").digest(keystoreData)
             keystoreHandlersCacheByHash[Base32().encodeAsString(hash)] = keystoreHandler
-            logger.info("keystore ready, device id = {}", keystore.right)
-            return Triple(keystore.right, keystoreData, keystoreAlgorithm)
+            logger.info("Keystore is ready for device ID: {}.", keystore.second)
+            return Triple(keystore.second, keystoreData, keystoreAlgorithm)
         }
 
         fun loadKeystore(configuration: Configuration): KeystoreHandler {
@@ -150,7 +150,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
             }
             val keystoreAlgo = getKeystoreAlgorithm(configuration.keystoreAlgorithm)
             val keystore = importKeystore(configuration.keystoreData, keystoreAlgo)
-            val keystoreHandler = KeystoreHandler(keystore.left)
+            val keystoreHandler = KeystoreHandler(keystore.first)
             keystoreHandlersCacheByHash[Base32().encodeAsString(hash)] = keystoreHandler
             logger.info("Keystore is ready for device ID: {}.", keystore.second)
             return keystoreHandler
