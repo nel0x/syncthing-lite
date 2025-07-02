@@ -4,7 +4,6 @@ apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 27
-    dataBinding.enabled = true
 
 
     defaultConfig {
@@ -30,8 +29,8 @@ android {
     packagingOptions {
         exclude 'META-INF/*'
     }
-    dataBinding {
-        enabled = true
+    buildFeatures {
+        dataBinding true
     }
 }
 
