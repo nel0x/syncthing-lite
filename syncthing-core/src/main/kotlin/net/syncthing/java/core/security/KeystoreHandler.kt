@@ -18,7 +18,6 @@ import net.syncthing.java.core.configuration.Configuration
 import net.syncthing.java.core.interfaces.RelayConnection
 import net.syncthing.java.core.utils.NetworkUtils
 import org.apache.commons.codec.binary.Base32
-import org.apache.commons.lang3.tuple.Pair
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
 import org.bouncycastle.cert.jcajce.JcaX509v1CertificateBuilder
 import org.bouncycastle.jce.provider.BouncyCastleProvider
@@ -185,7 +184,7 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
                 val certChain = arrayOfNulls<Certificate>(1)
                 certChain[0] = JcaX509CertificateConverter().getCertificate(certificateHolder)
                 keyStore.setKeyEntry("key", keyPair.private, KEY_PASSWORD.toCharArray(), certChain)
-                return Pair.of(keyStore, deviceId)
+                return Pair(keyStore, deviceId)
             } catch (e: OperatorCreationException) {
                 throw CryptoException(e)
             } catch (e: CertificateException) {
