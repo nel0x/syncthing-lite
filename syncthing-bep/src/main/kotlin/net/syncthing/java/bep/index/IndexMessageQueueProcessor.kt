@@ -54,12 +54,12 @@ class IndexMessageQueueProcessor (
     private val indexUpdateProcessingQueue = Channel<IndexUpdateAction>(capacity = Channel.RENDEZVOUS)
 
     suspend fun handleIndexMessageReceivedEvent(folderId: String, filesList: List<BlockExchangeProtos.FileInfo>, clusterConfigInfo: ClusterConfigInfo, peerDeviceId: DeviceId) {
-        filesList.chunked(BATCH_SIZE).forEach { chunck ->
-            handleIndexMessageReceivedEventWithoutChuncking(folderId, chunck, clusterConfigInfo, peerDeviceId)
+        filesList.chunked(BATCH_SIZE).forEach { chunk ->
+            handleIndexMessageReceivedEventWithoutChunking(folderId, chunk, clusterConfigInfo, peerDeviceId)
         }
     }
 
-    suspend fun handleIndexMessageReceivedEventWithoutChuncking(folderId: String, filesList: List<BlockExchangeProtos.FileInfo>, clusterConfigInfo: ClusterConfigInfo, peerDeviceId: DeviceId) {
+    suspend fun handleIndexMessageReceivedEventWithoutChunking(folderId: String, filesList: List<BlockExchangeProtos.FileInfo>, clusterConfigInfo: ClusterConfigInfo, peerDeviceId: DeviceId) {
         indexUpdateIncomingLock.withLock {
             logger.info("Received index message event, preparing to process message.")
 
@@ -69,7 +69,7 @@ class IndexMessageQueueProcessor (
                     .build()
 
             if (indexUpdateProcessingQueue.offer(IndexUpdateAction(data, clusterConfigInfo, peerDeviceId))) {
-                // message is beeing processed now
+                // message is being processed now
             } else {
                 val key = tempRepository.pushTempData(data.toByteArray())
 
