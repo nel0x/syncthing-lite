@@ -142,6 +142,7 @@ class BlockPusher(private val localDeviceId: DeviceId,
             override fun isCompleted() = isCompleted.get()
 
             override fun close() {
+                logger.debug("Closing the upload process.")
                 monitoringProcessExecutorService.shutdown()
                 indexListenerStream.cancel()
                 requestHandlerRegistry.unregisterListener(requestFilter)
