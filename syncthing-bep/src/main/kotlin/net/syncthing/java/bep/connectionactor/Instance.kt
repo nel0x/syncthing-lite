@@ -21,6 +21,7 @@ import kotlinx.coroutines.channels.SendChannel
 import kotlinx.coroutines.channels.consumeEach
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
+import org.slf4j.LoggerFactory
 import net.syncthing.java.bep.BlockExchangeProtos
 import net.syncthing.java.bep.index.IndexHandler
 import net.syncthing.java.core.beans.DeviceAddress
@@ -32,6 +33,8 @@ import java.io.IOException
 import java.util.*
 
 object ConnectionActor {
+    private val logger = org.slf4j.LoggerFactory.getLogger("ConnectionActor")
+
     fun createInstance(
             address: DeviceAddress,
             configuration: Configuration,
@@ -40,7 +43,16 @@ object ConnectionActor {
     ): SendChannel<ConnectionAction> {
         val channel = Channel<ConnectionAction>(Channel.RENDEZVOUS)
 
+        val coroutineExceptionHandler = CoroutineExceptionHandler { _, throwable ->
+            logger.error("⚠️ Uncaught coroutine exception: ${throwable.message}", throwable)
+        }
+
         GlobalScope.async (Dispatchers.IO) {
+            Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
+                println("💣 Uncaught exception in thread ${thread.name}: ${throwable.message}")
+                throwable.printStackTrace()
+            }
+
             OpenConnection.openSocketConnection(address, configuration).use { socket ->
                 val inputStream = DataInputStream(socket.inputStream)
                 val outputStream = DataOutputStream(socket.outputStream)
@@ -64,17 +76,40 @@ object ConnectionActor {
                     PostAuthenticationMessageHandler.sendMessage(outputStream, message, markActivityOnSocket = {})
                 }
 
-                suspend fun receivePostAuthMessage() = receivePostAuthMessageLock.withLock {
-                    PostAuthenticationMessageHandler.receiveMessage(inputStream, markActivityOnSocket = {})
+                suspend fun receivePostAuthMessage(): Pair<BlockExchangeProtos.MessageType, MessageLite> {
+                    try {
+                        val result = PostAuthenticationMessageHandler.receiveMessage(
+                            inputStream = inputStream,
+                            markActivityOnSocket = {}
+                        )
+                        logger.debug("📡 receivePostAuthMessage() delivered: ${result.first}, class=${result.second.javaClass.name}")
+                        return result
+                    } catch (e: Exception) {
+                        logger.error("🚨 receivePostAuthMessage failed: ${e.message}", e)
+                        throw e
+                    }
                 }
 
-                // cluster config exchange
-                val clusterConfig = coroutineScope {
-                    launch { sendPostAuthMessage(ClusterConfigHandler.buildClusterConfig(configuration, indexHandler, address.deviceId)) }
-                    async { receivePostAuthMessage() }.await()
-                }.second
+                logger.debug("📤 sendPostAuthMessage() sending CLUSTER_CONFIG")
+                val clusterConfigPair = try {
+                    coroutineScope {
+                        launch {
+                            sendPostAuthMessage(
+                                ClusterConfigHandler.buildClusterConfig(configuration, indexHandler, address.deviceId)
+                            )
+                        }
+                        async {
+                            receivePostAuthMessage()
+                        }.await()
+                    }
+                } catch (e: Exception) {
+                    logger.error("💥 Exception while receiving post-auth message: ${e.message}", e)
+                    throw e
+                }
+                logger.debug("📬 Received post-auth message type: ${clusterConfigPair.first}, class: ${clusterConfigPair.second.javaClass.name}")
+                val clusterConfig = clusterConfigPair.second
 
-                if (!(clusterConfig is BlockExchangeProtos.ClusterConfig)) {
+                if (clusterConfig !is BlockExchangeProtos.ClusterConfig) {
                     throw IOException("first message was not a cluster config message")
                 }
 
@@ -136,6 +171,9 @@ object ConnectionActor {
                             }
                         }
                     }
+
+                    logger.debug("📁 Local folders in config: ${configuration.folders.map { it.folderId }}")
+                    logger.debug("📁 Remote device shares folders: ${clusterConfigInfo.sharedFolderIds}")
 
                     // send index messages - TODO: Why?
                     for (folder in configuration.folders) {
