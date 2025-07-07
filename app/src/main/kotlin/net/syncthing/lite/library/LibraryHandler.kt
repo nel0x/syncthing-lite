@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicBoolean
  *
  * It's possible to do multiple start and stop cycles with one instance of this class.
  */
+@UseExperimental(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
 class LibraryHandler(context: Context) {
 
     companion object {
@@ -95,7 +96,7 @@ class LibraryHandler(context: Context) {
             throw IllegalStateException("already stopped")
         }
 
-        job!!.cancel()
+        job.cancel()
 
         syncthingClient {
             try {
