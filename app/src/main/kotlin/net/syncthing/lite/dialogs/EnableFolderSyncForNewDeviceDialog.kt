@@ -1,15 +1,14 @@
 package net.syncthing.lite.dialogs
 
-import android.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
-import android.support.v4.app.FragmentManager
+import androidx.fragment.app.FragmentManager
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.DeviceInfo
 import net.syncthing.lite.R
 import net.syncthing.lite.fragments.SyncthingDialogFragment
-import java.io.Serializable
 
 class EnableFolderSyncForNewDeviceDialog : SyncthingDialogFragment() {
 
