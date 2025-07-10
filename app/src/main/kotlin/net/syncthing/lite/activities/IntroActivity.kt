@@ -37,7 +37,7 @@ import java.io.IOException
 class IntroActivity : AppIntro() {
 
     companion object {
-        const val ENABLE_TEST_DATA: Boolean = false
+        const val ENABLE_TEST_DATA: Boolean = true
     }
 
     /**
