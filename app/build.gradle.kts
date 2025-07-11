@@ -17,6 +17,10 @@ android {
         multiDexEnabled = true
     }
 
+    lint {
+        targetSdk = libs.versions.target.sdk.get().toInt()
+    }
+
     buildTypes {
         debug {
             isMinifyEnabled = false
