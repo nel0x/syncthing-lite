@@ -2,7 +2,9 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
 android {
-    compileSdkVersion 33
+    compileSdkVersion 34
+    buildToolsVersion "34.0.0"
+    namespace = "net.syncthing.lite"
 
     defaultConfig {
         applicationId "net.syncthing.lite"
@@ -24,8 +26,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     packagingOptions {
@@ -51,7 +53,7 @@ dependencies {
     implementation 'com.google.zxing:core:3.3.0'
     implementation 'com.github.apl-devs:appintro:6.2.0'
 
-    implementation(project(':syncthing-client'))
+    implementation project(':syncthing-client')
     implementation project(':syncthing-repository-android')
     implementation project(':syncthing-temp-repository-encryption')
 }

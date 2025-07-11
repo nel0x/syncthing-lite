@@ -9,6 +9,7 @@ import android.util.TypedValue
 import androidx.fragment.app.Fragment
 import androidx.core.content.ContextCompat
 import android.text.Html
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +17,7 @@ import android.widget.Button
 import com.github.appintro.AppIntro
 import com.github.appintro.SlidePolicy
 import com.google.zxing.integration.android.IntentIntegrator
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.syncthing.java.core.beans.DeviceId
@@ -36,7 +38,8 @@ import java.io.IOException
 class IntroActivity : AppIntro() {
 
     companion object {
-        const val ENABLE_TEST_DATA: Boolean = true
+        private const val ENABLE_TEST_DATA: Boolean = true
+        private const val TAG = "IntroActivity"
     }
 
     /**
@@ -72,16 +75,19 @@ class IntroActivity : AppIntro() {
      * Display some simple welcome text.
      */
     class IntroFragmentOne : SyncthingFragment() {
-        override fun onCreate(savedInstanceState: Bundle?) {
-            super.onCreate(savedInstanceState)
+        override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+            super.onViewCreated(view, savedInstanceState)
 
-            launch {
-                libraryHandler.libraryManager.withLibrary { library ->
-                    library.configuration.update { oldConfig ->
-                        oldConfig.copy(localDeviceName = Util.getDeviceName())
+            launch(Dispatchers.IO) {
+                try {
+                    libraryHandler.libraryManager.withLibrary { library ->
+                        library.configuration.update { oldConfig ->
+                            oldConfig.copy(localDeviceName = Util.getDeviceName())
+                        }
+                        library.configuration.persistLater()
                     }
-
-                    library.configuration.persistLater()
+                } catch (e: Exception) {
+                    Log.e(TAG, "onViewCreated::launch", e)
                 }
             }
         }
