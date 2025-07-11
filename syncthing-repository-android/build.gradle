@@ -8,9 +8,8 @@ android {
     namespace = "net.syncthing.repository.android"
 
     defaultConfig {
-        minSdkVersion 16
+        minSdkVersion 21
         targetSdkVersion 33
-
     }
 
     buildTypes {
