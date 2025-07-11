@@ -1,9 +1,11 @@
 @echo off
 setlocal enabledelayedexpansion
 ::
-SET "ARTIFACT_PATH=X:\Shared"
+SET "SCRIPT_PATH=%~dp0"
+SET "PROJECT_ROOT=%SCRIPT_PATH%..\..\.."
+SET "APK_FULLFN=%PROJECT_ROOT%\app\build\outputs\apk\debug\app-debug.apk"
 ::
-dir "%ARTIFACT_PATH%\app-debug.apk"
-adb install -r "%ARTIFACT_PATH%\app-debug.apk"
+dir "%APK_FULLFN%"
+adb install -r "%APK_FULLFN%"
 ::
 goto :eof
