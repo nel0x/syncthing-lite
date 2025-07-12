@@ -13,12 +13,13 @@ import net.syncthing.lite.databinding.DialogFileBinding
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileDialogFragment
 import net.syncthing.lite.dialogs.downloadfile.DownloadFileSpec
 import net.syncthing.lite.utils.MimeType
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 
 class FileMenuDialogFragment: BottomSheetDialogFragment() {
     companion object {
         private const val ARG_FILE_SPEC = "file spec"
         private const val TAG = "DownloadFileDialog"
-        private const val REQ_SAVE_AS = 1
 
         fun newInstance(fileInfo: FileInfo) = newInstance(DownloadFileSpec(
                 folder = fileInfo.folder,
@@ -33,8 +34,28 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
         }
     }
 
+    private lateinit var saveAsLauncher: ActivityResultLauncher<Intent>
+
     val fileSpec: DownloadFileSpec by lazy {
-        arguments!!.getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            arguments!!.getSerializable(ARG_FILE_SPEC, DownloadFileSpec::class.java)!!
+        } else {
+            @Suppress("DEPRECATION")
+            arguments!!.getSerializable(ARG_FILE_SPEC) as DownloadFileSpec
+        }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        saveAsLauncher = registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult()
+        ) { result ->
+            if (result.resultCode == AppCompatActivity.RESULT_OK) {
+                DownloadFileDialogFragment.newInstance(fileSpec, result.data!!.data!!).show(requireActivity().supportFragmentManager)
+                dismiss()
+            }
+        }
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -43,31 +64,18 @@ class FileMenuDialogFragment: BottomSheetDialogFragment() {
         binding.filename = fileSpec.fileName
 
         binding.saveAsButton.setOnClickListener {
-            startActivityForResult(
+            saveAsLauncher.launch(
                     Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
                         addCategory(Intent.CATEGORY_OPENABLE)
 
                         type = MimeType.getFromFilename(fileSpec.fileName)
 
                         putExtra(Intent.EXTRA_TITLE, fileSpec.fileName)
-                    },
-                    REQ_SAVE_AS
+                    }
             )
         }
 
         return binding.root
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        when (requestCode) {
-            REQ_SAVE_AS -> {
-                if (resultCode == AppCompatActivity.RESULT_OK) {
-                    DownloadFileDialogFragment.newInstance(fileSpec, data!!.data!!).show(requireActivity().supportFragmentManager)
-                    dismiss()
-                }
-            }
-            else -> super.onActivityResult(requestCode, resultCode, data)
-        }
     }
 
     fun show(fragmentManager: FragmentManager) {

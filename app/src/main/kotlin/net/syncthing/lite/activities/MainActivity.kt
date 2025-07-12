@@ -1,5 +1,6 @@
 package net.syncthing.lite.activities
 
+import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
 import android.os.Bundle
@@ -10,7 +11,6 @@ import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
-import androidx.preference.PreferenceManager
 import kotlinx.coroutines.launch
 import net.syncthing.lite.R
 import net.syncthing.lite.databinding.ActivityMainBinding
@@ -32,7 +32,7 @@ class MainActivity : SyncthingActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+        val prefs = getSharedPreferences("default", Context.MODE_PRIVATE)
         if (prefs.getBoolean(PREF_IS_FIRST_START, true)) {
             startActivity(Intent(this, IntroActivity::class.java))
             finish()

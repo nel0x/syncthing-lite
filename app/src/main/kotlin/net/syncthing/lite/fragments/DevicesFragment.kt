@@ -10,6 +10,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import com.google.zxing.integration.android.IntentIntegrator
+import net.syncthing.lite.utils.FragmentIntentIntegrator
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import net.syncthing.java.bep.connectionactor.ConnectionInfo
@@ -19,7 +20,6 @@ import net.syncthing.lite.adapters.DeviceAdapterListener
 import net.syncthing.lite.adapters.DevicesAdapter
 import net.syncthing.lite.databinding.FragmentDevicesBinding
 import net.syncthing.lite.databinding.ViewEnterDeviceIdBinding
-import net.syncthing.lite.utils.FragmentIntentIntegrator
 import net.syncthing.lite.utils.Util
 import java.io.IOException
 
@@ -79,19 +79,17 @@ class DevicesFragment : SyncthingFragment() {
         return binding.root
     }
 
-    override fun onActivityResult(requestCode: Int, resultCode: Int, intent: Intent?) {
-        val scanResult = IntentIntegrator.parseActivityResult(requestCode, resultCode, intent)
-        if (scanResult?.contents != null && scanResult.contents.isNotBlank()) {
-            addDeviceDialogBinding?.deviceId?.setText(scanResult.contents)
-        }
-    }
-
     private fun showDialog() {
         val binding = ViewEnterDeviceIdBinding.inflate(LayoutInflater.from(context), null, false)
         addDeviceDialogBinding = binding
 
         binding.scanQrCode.setOnClickListener {
-            FragmentIntentIntegrator(this@DevicesFragment).initiateScan()
+            val integrator = FragmentIntentIntegrator(this@DevicesFragment) { scanResult ->
+                if (scanResult != null && scanResult.isNotBlank()) {
+                    addDeviceDialogBinding?.deviceId?.setText(scanResult)
+                }
+            }
+            integrator.initiateScan()
         }
         binding.deviceId.post {
             val imm = context!!.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
