@@ -16,7 +16,7 @@ version-code = "1300000"
 version-name = "1.30.0.0"
 
 # AndroidX and Google libraries
-material = "1.9.0"
+material = "1.12.0"
 appcompat = "1.6.1"
 legacy-preference-v14 = "1.0.0"
 legacy-support-v4 = "1.0.0"
