@@ -3,6 +3,7 @@ package net.syncthing.lite.activities
 import androidx.appcompat.app.AlertDialog
 import androidx.databinding.DataBindingUtil
 import android.os.Bundle
+import android.util.Log
 import com.google.android.material.snackbar.Snackbar
 import android.view.LayoutInflater
 import net.syncthing.lite.R
@@ -18,6 +19,10 @@ abstract class SyncthingActivity : CoroutineActivity() {
     }
     private var loadingDialog: AlertDialog? = null
     private var snackBar: Snackbar? = null
+
+    companion object {
+        private const val TAG = "SyncthingActivity"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,7 +44,6 @@ abstract class SyncthingActivity : CoroutineActivity() {
             if (!isDestroyed) {
                 loadingDialog?.dismiss()
             }
-
             onLibraryLoaded()
         }
     }
