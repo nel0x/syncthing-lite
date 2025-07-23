@@ -81,7 +81,7 @@ object ConnectionActor {
                         )
                         return result
                     } catch (e: Exception) {
-                        logger.error("🚨 receivePostAuthMessage failed: ${e.message}")
+                        logger.warn("receivePostAuthMessage failed: ${e.message}")
                         throw e
                     }
                 }
@@ -221,6 +221,9 @@ object ConnectionActor {
                                 // otherwise, Kotlin would warn that the return
                                 // type does not match to the other branches
                                 null
+                            }
+                            is PingAction -> {
+                                sendPostAuthMessage(action.ping)
                             }
                             is SendIndexUpdateAction -> {
                                 async {
