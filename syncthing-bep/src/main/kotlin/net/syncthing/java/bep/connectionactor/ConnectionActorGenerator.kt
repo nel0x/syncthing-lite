@@ -33,11 +33,19 @@ data class Connection (
         val clusterConfigInfo: ClusterConfigInfo
 )
 
-@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class)
+@OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class, kotlinx.coroutines.ObsoleteCoroutinesApi::class, kotlinx.coroutines.DelicateCoroutinesApi::class)
 object ConnectionActorGenerator {
     private val closed = Channel<ConnectionAction>().apply { cancel() }
     private val logger = LoggerFactory.getLogger(ConnectionActorGenerator::class.java)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /**
+     * Check if a channel is open for sending.
+     * We check both that it's not the closed sentinel and that it's actually open for sending.
+     */
+    private fun isChannelOpen(channel: SendChannel<ConnectionAction>): Boolean {
+        return channel != closed && !channel.isClosedForSend
+    }
 
     private fun deviceAddressesGenerator(deviceAddress: ReceiveChannel<DeviceAddress>) = scope.produce<List<DeviceAddress>> (capacity = Channel.CONFLATED) {
         val addresses = mutableMapOf<String, DeviceAddress>()
@@ -137,15 +145,38 @@ object ConnectionActorGenerator {
 
         suspend fun tryConnectingToAddressHandleBaseErrors(deviceAddress: DeviceAddress): Pair<SendChannel<ConnectionAction>, ClusterConfigInfo>? = try {
             val newActor = ConnectionActor.createInstance(deviceAddress, configuration, indexHandler, requestHandler)
-            val clusterConfig = ConnectionActorUtil.waitUntilConnected(newActor)
-
+            
+            // logger.trace("Created connection actor for $deviceAddress, waiting for connection setup")
+            
+            // Use a timeout for connection setup to avoid hanging indefinitely
+            val clusterConfig = try {
+                withTimeout(30000) { // 30 second timeout for connection setup
+                    ConnectionActorUtil.waitUntilConnected(newActor)
+                }
+            } catch (e: TimeoutCancellationException) {
+                logger.trace("Connection setup timed out for $deviceAddress")
+                newActor.close()
+                throw IOException("Connection setup timeout for $deviceAddress")
+            } catch (e: Exception) {
+                logger.warn("Connection setup failed for $deviceAddress: ${e.message}")
+                newActor.close()
+                throw e
+            }
+            
+            // logger.trace("Connection setup succeeded for $deviceAddress")
             newActor to clusterConfig
         } catch (ex: Exception) {
-            logger.warn("failed to connect to $deviceAddress", ex)
+            // Log "Connection reset" at debug level since it's expected when remote device hasn't accepted connection yet
+            if (ex.message?.contains("Connection reset") == true) {
+                logger.trace("Connection reset detected - this is expected when remote device hasn't accepted connection yet")
+            } else {
+                logger.trace("Failed to connect to $deviceAddress: ${ex.message}")
+            }
 
             when (ex) {
                 is IOException -> {/* expected -> ignore */}
                 is InterruptedException -> {/* expected -> ignore */}
+                is TimeoutCancellationException -> {/* expected -> ignore */}
                 else -> throw ex
             }
 
@@ -160,6 +191,7 @@ object ConnectionActorGenerator {
                         status = ConnectionStatus.Disconnected
                 )
                 dispatchStatus()
+                // logger.trace("Connection attempt to $deviceAddress failed, status set to Disconnected")
             }
 
             currentStatus = currentStatus.copy(
@@ -167,17 +199,26 @@ object ConnectionActorGenerator {
                     currentAddress = deviceAddress
             )
             dispatchStatus()
+            // logger.trace("Attempting to connect to $deviceAddress")
 
-            var connection = tryConnectingToAddressHandleBaseErrors(deviceAddress) ?: return run {handleCancel(); false}
-
-            if (connection.second.newSharedFolders.isNotEmpty()) {
-                logger.debug("Connected to device {} with new folders --> Reconnect.", deviceAddress)
-                // reconnect to send new cluster config
-                connection.first.close()
-                connection = tryConnectingToAddressHandleBaseErrors(deviceAddress) ?: return run {handleCancel(); false}
+            var connection = tryConnectingToAddressHandleBaseErrors(deviceAddress) ?: return run {
+                // logger.trace("Connection to $deviceAddress failed, will retry later")
+                handleCancel()
+                false
             }
 
-            logger.debug("Connected to device {}.", deviceAddress)
+            if (connection.second.newSharedFolders.isNotEmpty()) {
+                logger.trace("Connected to device {} with new folders --> Reconnect.", deviceAddress)
+                // reconnect to send new cluster config
+                connection.first.close()
+                connection = tryConnectingToAddressHandleBaseErrors(deviceAddress) ?: return run {
+                    // logger.trace("Reconnection to $deviceAddress failed, will retry later")
+                    handleCancel()
+                    false
+                }
+            }
+
+            logger.trace("Connected to device {}.", deviceAddress)
 
             currentStatus = currentStatus.copy(
                     status = ConnectionStatus.Connected,
@@ -188,7 +229,9 @@ object ConnectionActorGenerator {
             return true
         }
 
-        fun isConnected() = currentActor != closed
+        fun isConnected() = (currentActor != closed && isChannelOpen(currentActor)) /* .also { connected ->
+            logger.trace("isConnected() = $connected, currentActor open = ${isChannelOpen(currentActor)}")
+        } */
 
         invokeOnClose {
             currentActor.close()
@@ -228,17 +271,39 @@ object ConnectionActorGenerator {
                     delay(500)  // don't take too much CPU
                 } else /* is not connected */ {
                     if (currentStatus.status == ConnectionStatus.Connected) {
+                        logger.trace("Status was Connected but isConnected() returned false, setting to Disconnected")
                         currentStatus = currentStatus.copy(status = ConnectionStatus.Disconnected)
                         dispatchStatus()
                     }
 
                     val deviceAddressList = currentStatus.addresses
+                    // logger.trace("Not connected (status: ${currentStatus.status}), trying to connect to ${deviceAddressList.size} addresses")
 
-                    // try all addresses
-                    for (address in deviceAddressList) {
-                        if (tryConnectingToAddress(address)) {
-                            break
+                    if (deviceAddressList.isEmpty()) {
+                        logger.trace("No addresses available, waiting for discovery")
+                    } else {
+                        // try all addresses
+                        var connectionSuccessful = false
+                        for (address in deviceAddressList) {
+                            // logger.trace("Attempting to connect to address: $address")
+                            try {
+                                if (tryConnectingToAddress(address)) {
+                                    // logger.trace("Successfully connected to address: $address")
+                                    connectionSuccessful = true
+                                    break
+                                } else {
+                                    // logger.trace("Failed to connect to address: $address")
+                                }
+                            } catch (e: Exception) {
+                                logger.warn("Exception while connecting to address $address: ${e.message}")
+                            }
                         }
+                        
+                        /*
+                        if (!connectionSuccessful) {
+                            logger.trace("All connection attempts failed, will retry after delay")
+                        }
+                        */
                     }
 
                     // reset countdown before trying other connection if it would be time now
@@ -251,6 +316,7 @@ object ConnectionActorGenerator {
                     }
 
                     if (newDeviceAddressList != null) {
+                        logger.trace("Received new device address list with ${newDeviceAddressList.size} addresses")
                         currentStatus = currentStatus.copy(addresses = newDeviceAddressList)
                         dispatchStatus()
                     }
