@@ -86,6 +86,7 @@ class MainActivity : SyncthingActivity() {
     }
 
     private fun onNavigationItemSelectedListener(menuItem: MenuItem): Boolean {
+        Log.v(TAG, "Navigation item selected: ${menuItem.title}")
         when (menuItem.itemId) {
             R.id.folders -> setContentFragment(FoldersFragment())
             R.id.devices -> setContentFragment(DevicesFragment())
@@ -111,7 +112,7 @@ class MainActivity : SyncthingActivity() {
     }
 
     private fun cleanCacheAndIndex() {
-        Log.d(TAG, "cleanCacheAndIndex")
+        Log.v(TAG, "cleanCacheAndIndex() called")
         launch {
             libraryHandler.libraryManager.withLibrary {
                 it.syncthingClient.clearCacheAndIndex()
