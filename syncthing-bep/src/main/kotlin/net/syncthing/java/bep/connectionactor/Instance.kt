@@ -45,10 +45,37 @@ object ConnectionActor {
     ): SendChannel<ConnectionAction> {
         val channel = Channel<ConnectionAction>(Channel.RENDEZVOUS)
 
-        CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO + CoroutineExceptionHandler { _, throwable ->
+            when {
+                throwable.message?.contains("Broken pipe") == true -> {
+                    // Expected during connection termination - no logging needed
+                }
+                throwable.message?.contains("Connection reset") == true -> {
+                    // Expected during connection issues - no logging needed
+                }
+                throwable is java.net.SocketException -> {
+                    // Expected socket exceptions during disconnection - no logging needed
+                }
+                else -> {
+                    logger.error("Uncaught exception in connection actor: ${throwable.message}")
+                }
+            }
+        }).launch {
             Thread.setDefaultUncaughtExceptionHandler { thread, throwable ->
-                logger.warn("Uncaught exception in thread ${thread.name}: ${throwable.message}")
-                // throwable.printStackTrace()
+                when {
+                    throwable.message?.contains("Broken pipe") == true -> {
+                        // Expected during connection termination - no logging needed
+                    }
+                    throwable.message?.contains("Connection reset") == true -> {
+                        // Expected during connection issues - no logging needed
+                    }
+                    throwable is java.net.SocketException -> {
+                        // Expected socket exceptions during disconnection - no logging needed
+                    }
+                    else -> {
+                        logger.error("Uncaught exception in thread ${thread.name}: ${throwable.message}")
+                    }
+                }
             }
 
             OpenConnection.openSocketConnection(address, configuration).use { socket ->
@@ -81,7 +108,27 @@ object ConnectionActor {
                         )
                         return result
                     } catch (e: Exception) {
-                        logger.warn("receivePostAuthMessage failed: ${e.message}")
+                        when {
+                            e.message?.contains("Connection reset") == true -> {
+                                logger.trace("receivePostAuthMessage: connection reset")
+                            }
+                            e.message?.contains("Broken pipe") == true -> {
+                                // Expected during connection termination - no logging needed
+                            }
+                            e.message?.contains("Connection refused") == true -> {
+                                logger.trace("receivePostAuthMessage: connection refused")
+                            }
+                            e is java.net.SocketException -> {
+                                // Expected socket exceptions - no logging needed
+                            }
+                            e is java.io.IOException -> {
+                                // Expected IO exceptions - no logging needed
+                            }
+                            else -> {
+                                logger.error("Uncaught exception in receivePostAuthMessage: ${e.message}")
+                            }
+                        }
+                        // Re-throw to be handled by the outer connection setup catch block
                         throw e
                     }
                 }
@@ -99,7 +146,28 @@ object ConnectionActor {
                         }.await()
                     }
                 } catch (e: Exception) {
-                    logger.error("💥 Exception while receiving post-auth message: ${e.message}")
+                    // Handle connection exceptions gracefully
+                    when {
+                        e.message?.contains("Connection reset") == true -> {
+                            logger.trace("receivePostAuthMessage: connection reset during cluster config exchange")
+                        }
+                        e.message?.contains("Broken pipe") == true -> {
+                            // Expected during connection termination - no logging needed
+                        }
+                        e.message?.contains("Connection refused") == true -> {
+                            logger.trace("receivePostAuthMessage: connection refused during cluster config exchange")
+                        }
+                        e is java.net.SocketException -> {
+                            // Expected socket exceptions - no logging needed
+                        }
+                        e is java.io.IOException -> {
+                            // Expected IO exceptions - no logging needed
+                        }
+                        else -> {
+                            logger.error("receivePostAuthMessage: Uncaught exception, ${e.message}")
+                        }
+                    }
+                    // Re-throw to be handled by the outer connection setup catch block
                     throw e
                 }
                 logger.debug("📬 Received post-auth message type: ${clusterConfigPair.first}, class: ${clusterConfigPair.second.javaClass.name}")
@@ -123,7 +191,30 @@ object ConnectionActor {
                 try {
                     launch {
                         while (isActive) {
-                            val message = receivePostAuthMessage().second
+                            val message = try {
+                                receivePostAuthMessage().second
+                            } catch (e: Exception) {
+                                when {
+                                    e.message?.contains("Connection reset") == true -> {
+                                        logger.trace("receivePostAuthMessage: connection reset detected in message loop")
+                                    }
+                                    e.message?.contains("Broken pipe") == true -> {
+                                        // Expected during connection termination - no logging needed
+                                    }
+                                    e.message?.contains("Connection refused") == true -> {
+                                        logger.trace("receivePostAuthMessage: connection refused detected in message loop")
+                                    }
+                                    e is java.net.SocketException -> {
+                                        // Expected socket exceptions - no logging needed
+                                    }
+                                    e is java.io.IOException -> {
+                                        // Expected IO exceptions - no logging needed
+                                    }
+                                    else -> {
+                                        logger.error("receivePostAuthMessage: Uncaught exception, ${e.message}")
+                                    }
+                                }
+                            }
 
                             when (message) {
                                 is BlockExchangeProtos.Response -> {
@@ -196,7 +287,7 @@ object ConnectionActor {
 
                     channel.consumeEach { action ->
                         when (action) {
-                            CloseConnectionAction -> throw InterruptedException()
+                            is CloseConnectionAction -> throw InterruptedException()
                             is SendRequestConnectionAction -> {
                                 val requestId = nextRequestId++
 
