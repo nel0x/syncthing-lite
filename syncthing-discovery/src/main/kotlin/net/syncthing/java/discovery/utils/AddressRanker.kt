@@ -78,9 +78,11 @@ object AddressRanker {
         val startTime = System.currentTimeMillis()
 
         try {
+            val socketAddress = deviceAddress.getSocketAddress()
+            // logger.trace("pingAddressSync: " + socketAddress)
             Socket().use { socket ->
                 socket.soTimeout = TCP_CONNECTION_TIMEOUT
-                socket.connect(deviceAddress.getSocketAddress(), TCP_CONNECTION_TIMEOUT)
+                socket.connect(socketAddress, TCP_CONNECTION_TIMEOUT)
             }
         } catch (ex: IOException) {
             logger.debug("address unreacheable = $deviceAddress, ${ex.message}")
