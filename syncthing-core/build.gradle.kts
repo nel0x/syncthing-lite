@@ -12,7 +12,8 @@ dependencies {
     api(libs.commons.codec)
     api(libs.commons.io)
     api(libs.gson)
-    api(libs.bouncy.castle)
+    api(libs.bouncy.castle.bcmail)
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.bouncy.castle.bctls)
 }
