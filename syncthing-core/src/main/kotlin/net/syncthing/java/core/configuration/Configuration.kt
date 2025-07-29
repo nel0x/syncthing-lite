@@ -27,7 +27,9 @@ import java.net.InetAddress
 import java.util.*
 
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-class Configuration(configFolder: File = DefaultConfigFolder) {
+class Configuration(
+    configFolder: File,
+) {
     private val modifyLock = Mutex()
     private val saveLock = Mutex()
     private val configChannel = MutableStateFlow<Config?>(null)
@@ -68,7 +70,6 @@ class Configuration(configFolder: File = DefaultConfigFolder) {
 
     companion object {
         private val logger = LoggerFactory.getLogger(Configuration::class.java)
-        private val DefaultConfigFolder = File(System.getProperty("user.home"), ".config/syncthing-java/")
         private const val ConfigFileName = "config.json"
         private const val DatabaseFolderName = "database"
     }
