@@ -1,9 +1,9 @@
 package net.syncthing.java.core.security
 
 import net.syncthing.java.core.beans.DeviceId
+// import net.syncthing.java.core.utils.CertUtils
 import net.syncthing.java.core.utils.NetworkUtils
 import net.syncthing.java.core.utils.LoggerFactory
-import org.bouncycastle.util.encoders.Base64
 import java.security.MessageDigest
 import java.security.cert.Certificate
 import java.security.cert.CertificateException
@@ -15,12 +15,6 @@ import javax.net.ssl.SSLSocket
 object DeviceCertificateVerifier {
 
     private val logger = LoggerFactory.getLogger(DeviceCertificateVerifier::class.java)
-
-    fun derToPem(der: ByteArray): String {
-        return "-----BEGIN CERTIFICATE-----\n" +
-            Base64.toBase64String(der).chunked(76).joinToString("\n") +
-            "\n-----END CERTIFICATE-----"
-    }
 
     fun derDataToDeviceId(certificateDerData: ByteArray): DeviceId {
         val digest = MessageDigest.getInstance("SHA-256").digest(certificateDerData)
@@ -44,10 +38,10 @@ object DeviceCertificateVerifier {
 
         val derData = certificate.encoded
         val deviceIdFromCertificate = derDataToDeviceId(derData)
-        // logger.trace("Remote PEM Certificate: {}.", derToPem(derData))
+        // logger.trace("Remote PEM Certificate: {}.", CertUtils.convertCertificateToPem(derData))
 
         NetworkUtils.assertProtocol(deviceIdFromCertificate == deviceId) {
-            "Device ID mismatch! Expected = ${deviceId.deviceId}, Received = $deviceIdFromCertificate."
+            "Device ID mismatch! Expected = ${deviceId.deviceId}, Received = ${deviceIdFromCertificate.deviceId}"
         }
 
         logger.trace("Remote SSL certificate matches expected device ID: ${deviceId.deviceId}")
