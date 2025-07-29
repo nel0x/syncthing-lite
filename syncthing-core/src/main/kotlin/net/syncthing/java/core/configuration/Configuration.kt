@@ -29,6 +29,8 @@ import java.util.*
 @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
 class Configuration(
     configFolder: File,
+    val clientName: String,
+    val clientVersion: String
 ) {
     private val modifyLock = Mutex()
     private val saveLock = Mutex()
@@ -89,10 +91,6 @@ class Configuration(
 
     val keystoreAlgorithm: String
         get() = configChannel.value!!.keystoreAlgorithm
-
-    val clientName = "syncthing-java"
-
-    val clientVersion = javaClass.`package`.implementationVersion ?: "0.0.0"
 
     val peerIds: Set<DeviceId>
         get() = configChannel.value!!.peers.map { it.deviceId }.toSet()
