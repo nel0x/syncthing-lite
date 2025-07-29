@@ -53,13 +53,11 @@ class Configuration(
             if (localDeviceName.isEmpty() || localDeviceName == "localhost") {
                 localDeviceName = "syncthing-lite"
             }
-            val keystoreData = KeystoreHandler.Loader().generateKeystore()
+            val localDeviceId = KeystoreHandler.Loader().generateKeystore(configFolder).deviceId
             isSaved = false
             configChannel.value = Config(peers = setOf(), folders = setOf(),
                             localDeviceName = localDeviceName,
-                            localDeviceId = keystoreData.first.deviceId,
-                            keystoreData = Base64.toBase64String(keystoreData.second),
-                            keystoreAlgorithm = keystoreData.third,
+                            localDeviceId = localDeviceId,
                             customDiscoveryServers = emptySet(),
                             useDefaultDiscoveryServers = true
                     )
@@ -86,12 +84,6 @@ class Configuration(
             config.customDiscoveryServers + (if (config.useDefaultDiscoveryServers) DiscoveryServer.defaultDiscoveryServers else emptySet())
         }
 
-    val keystoreData: ByteArray
-        get() = Base64.decode(configChannel.value!!.keystoreData)
-
-    val keystoreAlgorithm: String
-        get() = configChannel.value!!.keystoreAlgorithm
-
     val peerIds: Set<DeviceId>
         get() = configChannel.value!!.peers.map { it.deviceId }.toSet()
 
@@ -103,6 +95,8 @@ class Configuration(
 
     val peers: Set<DeviceInfo>
         get() = configChannel.value!!.peers
+
+    fun getConfigFolder(): File = configFile.parentFile
 
     suspend fun update(operation: suspend (Config) -> Config): Boolean {
         modifyLock.withLock {
