@@ -31,6 +31,8 @@ import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder
 import org.bouncycastle.jce.provider.BouncyCastleProvider
+import org.bouncycastle.jsse.BCSSLSocket
+import org.bouncycastle.jsse.BCSSLParameters
 import org.bouncycastle.jsse.provider.BouncyCastleJsseProvider
 import org.bouncycastle.operator.OperatorCreationException
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder
@@ -127,6 +129,13 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
     fun createSocket(relaySocketAddress: InetSocketAddress): SSLSocket {
         try {
             val socket = socketFactory.createSocket() as SSLSocket
+            if (socket is BCSSLSocket) {
+                val bcSocket = socket as BCSSLSocket
+                val params = BCSSLParameters().apply {
+                    applicationProtocols = arrayOf(BEP)
+                }
+                bcSocket.parameters = params
+            }
             socket.connect(relaySocketAddress, SOCKET_TIMEOUT)
             return socket
         } catch (e: KeyManagementException) {
@@ -293,6 +302,11 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         private const val CERTIFICATE_DNS = "syncthing"
         private const val SOCKET_TIMEOUT = 2000
         private const val TLS_VERSION = "TLSv1.3"
+        private const val BEP = "bep/1.0"
+
+        // private const val RELAY = "bep-relay"
+
+        private val logger = LoggerFactory.getLogger(KeystoreHandler::class.java)
 
         private fun derToPem(der: ByteArray): String {
             return "-----BEGIN CERTIFICATE-----\n" + Base64.toBase64String(der).chunked(76).joinToString("\n") + "\n-----END CERTIFICATE-----"
@@ -301,11 +315,6 @@ class KeystoreHandler private constructor(private val keyStore: KeyStore) {
         fun derDataToDeviceId(certificateDerData: ByteArray): DeviceId {
             return DeviceId.fromHashData(MessageDigest.getInstance("SHA-256").digest(certificateDerData))
         }
-
-        const val BEP = "bep/1.0"
-        const val RELAY = "bep-relay"
-
-        private val logger = LoggerFactory.getLogger(KeystoreHandler::class.java)
 
         @Throws(SSLPeerUnverifiedException::class, CertificateException::class)
         fun assertSocketCertificateValid(socket: SSLSocket, deviceId: DeviceId) {
