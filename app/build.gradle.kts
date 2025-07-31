@@ -1,5 +1,7 @@
 plugins {
+    alias(libs.plugins.aboutLibraries)
     alias(libs.plugins.android.application)
+    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.kapt)
     // alias(libs.plugins.ksp)
@@ -84,7 +86,12 @@ android {
 }
 
 dependencies {
+    implementation(libs.aboutlibraries.compose.m3)
+    implementation(libs.aboutlibraries.core)
+    implementation(libs.activity.compose)
     implementation(libs.appcompat)
+    implementation(libs.compose.material3)
+    implementation(libs.compose.ui)
     implementation(libs.collection.ktx)
     implementation(libs.core.ktx)
     implementation(libs.kotlin.stdlib)

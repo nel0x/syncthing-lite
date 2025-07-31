@@ -16,7 +16,10 @@ version-code = "1300000"
 version-name = "1.30.0.0"
 
 # AndroidX and Google libraries
+activity = "1.10.1"
 appcompat = "1.7.1"
+compose-material3 = "1.3.2"
+compose-ui = "1.8.3"
 legacy-preference-v14 = "1.0.0"
 legacy-support-v4 = "1.0.0"
 lifecycle-runtime-ktx = "2.9.2"
@@ -29,6 +32,7 @@ collection-ktx = "1.5.0"
 preference-ktx = "1.2.1"
 
 # Third-party libraries
+aboutLibraries = "12.2.4"
 zxing-integration = "3.3.0"
 zxing-core = "3.3.0"
 zxing-android-embedded = "4.3.0"
@@ -54,7 +58,10 @@ protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.
 protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf-lite" }
 
 # AndroidX and Google
+activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
+compose-material3 = { module = "androidx.compose.material3:material3", version.ref = "compose-material3" }
+compose-ui = { module = "androidx.compose.ui:ui", version.ref = "compose-ui" }
 legacy-preference-v14 = { module = "androidx.legacy:legacy-preference-v14", version.ref = "legacy-preference-v14" }
 legacy-support-v4 = { module = "androidx.legacy:legacy-support-v4", version.ref = "legacy-support-v4" }
 lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
@@ -68,6 +75,8 @@ collection-ktx = { module = "androidx.collection:collection-ktx", version.ref = 
 preference-ktx = { module = "androidx.preference:preference-ktx", version.ref = "preference-ktx" }
 
 # Third-party
+aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutLibraries" }
+aboutlibraries-compose-m3 = { module = "com.mikepenz:aboutlibraries-compose-m3", version.ref = "aboutLibraries" }
 zxing-integration = { module = "com.google.zxing:android-integration", version.ref = "zxing-integration" }
 zxing-core = { module = "com.google.zxing:core", version.ref = "zxing-core" }
 zxing-android-embedded = { module = "com.journeyapps:zxing-android-embedded", version.ref = "zxing-android-embedded" }
@@ -82,6 +91,7 @@ commons-cli = { module = "commons-cli:commons-cli", version.ref = "commons-cli" 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "android-gradle-plugin" }
 android-library = { id = "com.android.library", version.ref = "android-gradle-plugin" }
+compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
@@ -89,3 +99,4 @@ ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobuf-plugin" }
 
 # Third-party libraries
+aboutLibraries = { id = "com.mikepenz.aboutlibraries.plugin", version.ref = "aboutLibraries" }
