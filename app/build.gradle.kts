@@ -1,7 +1,8 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.kotlin.kapt)
+    // alias(libs.plugins.ksp)
 }
 
 android {
@@ -83,18 +84,17 @@ android {
 }
 
 dependencies {
+    implementation(libs.appcompat)
+    implementation(libs.collection.ktx)
+    implementation(libs.core.ktx)
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.android)
-    implementation(libs.material)
-    implementation(libs.appcompat)
     implementation(libs.legacy.preference.v14)
     implementation(libs.legacy.support.v4)
     implementation(libs.lifecycle.runtime.ktx)
-    implementation(libs.recyclerview)
-    implementation(libs.core.ktx)
-    implementation(libs.collection.ktx)
+    implementation(libs.material)
     implementation(libs.preference.ktx)
-
+    implementation(libs.recyclerview)
     implementation(libs.zxing.android.embedded)
 
     implementation(project(":syncthing-client"))

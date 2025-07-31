@@ -16,11 +16,11 @@ version-code = "1300000"
 version-name = "1.30.0.0"
 
 # AndroidX and Google libraries
-material = "1.12.0"
 appcompat = "1.7.1"
 legacy-preference-v14 = "1.0.0"
 legacy-support-v4 = "1.0.0"
 lifecycle-runtime-ktx = "2.9.2"
+material = "1.12.0"
 recyclerview = "1.4.0"
 room = "2.7.2"
 appcompat-v7 = "28.0.0"
@@ -54,11 +54,11 @@ protobuf-javalite = { module = "com.google.protobuf:protobuf-javalite", version.
 protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf-lite" }
 
 # AndroidX and Google
-material = { module = "com.google.android.material:material", version.ref = "material" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 legacy-preference-v14 = { module = "androidx.legacy:legacy-preference-v14", version.ref = "legacy-preference-v14" }
 legacy-support-v4 = { module = "androidx.legacy:legacy-support-v4", version.ref = "legacy-support-v4" }
 lifecycle-runtime-ktx = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
+material = { module = "com.google.android.material:material", version.ref = "material" }
 recyclerview = { module = "androidx.recyclerview:recyclerview", version.ref = "recyclerview" }
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
@@ -84,5 +84,8 @@ android-application = { id = "com.android.application", version.ref = "android-g
 android-library = { id = "com.android.library", version.ref = "android-gradle-plugin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 protobuf = { id = "com.google.protobuf", version.ref = "protobuf-plugin" }
+
+# Third-party libraries
