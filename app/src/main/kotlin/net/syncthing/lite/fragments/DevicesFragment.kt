@@ -69,8 +69,8 @@ class DevicesFragment : SyncthingFragment() {
 
                                     library.configuration.persistLater()
 
-                                    // apply the change
-                                    library.syncthingClient.reconnect(deviceInfo.deviceId)
+                                    // TODO: update the device list (should become a side effect of the call below)
+                                    library.syncthingClient.disconnectFromRemovedDevices()
                                 }
                             }
                         }
