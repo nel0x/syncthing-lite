@@ -3,7 +3,6 @@ package net.syncthing.lite.activities
 import androidx.lifecycle.Observer
 import android.content.Context
 import android.content.Intent
-import androidx.databinding.DataBindingUtil
 import android.os.Build
 import android.os.Bundle
 import android.util.TypedValue
@@ -58,7 +57,7 @@ class IntroActivity : SyncthingActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        binding = DataBindingUtil.setContentView<ActivityIntroBinding>(this, R.layout.activity_intro)
+        binding = ActivityIntroBinding.inflate(layoutInflater).also { setContentView(it.root) }
         
         adapter = IntroFragmentAdapter(this)
         binding.viewPager.adapter = adapter
@@ -187,7 +186,11 @@ class IntroActivity : SyncthingActivity() {
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
             val binding = FragmentIntroOneBinding.inflate(inflater, container, false)
 
-            libraryHandler.isListeningPortTaken.observe(viewLifecycleOwner, Observer { binding.listeningPortTaken = it })
+            libraryHandler.isListeningPortTaken.observe(viewLifecycleOwner, Observer { isPortTaken ->
+                val visibility = if (isPortTaken) View.VISIBLE else View.GONE
+                binding.listeningPortTakenTitle.visibility = visibility
+                binding.listeningPortTakenMessage.visibility = visibility
+            })
 
             return binding.root
         }
@@ -217,7 +220,7 @@ class IntroActivity : SyncthingActivity() {
         }
 
         override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-            binding = DataBindingUtil.inflate(inflater, R.layout.fragment_intro_two, container, false)
+            binding = FragmentIntroTwoBinding.inflate(inflater, container, false)
             binding.enterDeviceId.scanQrCode.setOnClickListener {
                 qrCodeLauncher?.let { launcher ->
                     val intent = Intent(requireContext(), QRScannerActivity::class.java)
