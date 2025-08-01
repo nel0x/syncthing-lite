@@ -11,6 +11,7 @@ import android.view.inputmethod.InputMethodManager
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import net.syncthing.java.bep.connectionactor.ConnectionInfo
 import net.syncthing.java.core.beans.DeviceInfo
@@ -33,7 +34,6 @@ class DevicesFragment : SyncthingFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Register the activity result launcher in onCreate
         qrCodeLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == android.app.Activity.RESULT_OK) {
                 val scanResult = result.data?.getStringExtra(QRScannerActivity.SCAN_RESULT)
@@ -68,9 +68,8 @@ class DevicesFragment : SyncthingFragment() {
                                     }
 
                                     library.configuration.persistLater()
-
-                                    // TODO: update the device list (should become a side effect of the call below)
-                                    library.syncthingClient.disconnectFromRemovedDevices()
+                                    library.syncthingClient.disconnect(deviceInfo.deviceId)
+                                    updateDeviceList()
                                 }
                             }
                         }
@@ -132,5 +131,20 @@ class DevicesFragment : SyncthingFragment() {
         // Use different listener to keep dialog open after button click.
         // https://stackoverflow.com/a/15619098
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)!!.setOnClickListener { handleAddClick() }
+    }
+
+    private fun updateDeviceList() {
+        launch {
+            val connectionInfoMap = libraryHandler.subscribeToConnectionStatus().first()
+            val devices = libraryHandler.libraryManager.withLibrary { it.configuration.peers }
+
+            adapter.data = devices.map { device ->
+                device to (connectionInfoMap[device.deviceId] ?: ConnectionInfo.empty)
+            }
+
+            val isEmpty = devices.isEmpty()
+            binding.list.visibility = if (isEmpty) View.GONE else View.VISIBLE
+            binding.empty.visibility = if (isEmpty) View.VISIBLE else View.GONE
+        }
     }
 }
