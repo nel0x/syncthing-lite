@@ -51,7 +51,7 @@ class DevicesFragment : SyncthingFragment() {
 
         binding.list.adapter = adapter
 
-        adapter.listener = object: DeviceAdapterListener {
+        adapter.listener = object : DeviceAdapterListener {
             override fun onDeviceLongClicked(deviceInfo: DeviceInfo): Boolean {
                 AlertDialog.Builder(requireContext())
                         .setTitle(getString(R.string.remove_device_title, deviceInfo.name))
@@ -60,10 +60,17 @@ class DevicesFragment : SyncthingFragment() {
                             launch {
                                 libraryHandler.libraryManager.withLibrary { library ->
                                     library.configuration.update { oldConfig ->
+                                        val updatedFolders = oldConfig.folders.map { folder ->
+                                            folder.copy(
+                                                deviceIdWhitelist = folder.deviceIdWhitelist - deviceInfo.deviceId,
+                                                deviceIdBlacklist = folder.deviceIdBlacklist - deviceInfo.deviceId,
+                                                ignoredDeviceIdList = folder.ignoredDeviceIdList - deviceInfo.deviceId
+                                            )
+                                        }.toSet()
+
                                         oldConfig.copy(
-                                                peers = oldConfig.peers
-                                                        .filterNot { it.deviceId == deviceInfo.deviceId }
-                                                        .toSet()
+                                            peers = oldConfig.peers.filterNot { it.deviceId == deviceInfo.deviceId }.toSet(),
+                                            folders = updatedFolders
                                         )
                                     }
 
