@@ -71,7 +71,7 @@ Dies gilt nicht für Verbindungen, die per lokaler Gerätesuche hergestellt wurd
     <string name="open_source_licenses_summary">Verwendete Open-Source-Lizenzen anzeigen</string>
     <string name="edit_device_dialog_summary">Adressen, durch Kommas getrennt, eingeben, z. B.: dynamic, tcp4://192.168.1.10:22000, relay://192.168.1.11:22067</string>
     <string name="privacy_title">Datenschutzerklärung</string>
-    <string name="privacy_summary">Öffnet die Datenschutzrichtlinie von Syncthing-Lite, welche die Nutzung (eventuell vorhandener) personenbezogener Daten abdeckt.</string>
+    <string name="privacy_summary">Datenschutzrichtlinie von Syncthing-Lite öffnen, welche die (eventuelle) Nutzung personenbezogener Daten abdeckt.</string>
     <string name="open_source_licenses_title">Open-Source-Lizenzen</string>
     <string name="edit_device_dialog_title">Gerät bearbeiten</string>
     <string name="edit_device_addresses_hint">Adressen</string>
