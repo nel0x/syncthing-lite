@@ -77,8 +77,8 @@ Dies gilt nicht für Verbindungen, die per lokaler Gerätesuche hergestellt wurd
     <string name="edit_device_addresses_hint">Adressen</string>
     <string name="edit_device_menu_item">Bearbeiten</string>
     <string name="delete_device_menu_item">Löschen</string>
-    <string name="toast_file_delete_failed">Löschen von Datei fehlgeschlagen</string>
-    <string name="toast_delete_complete">Löschen von Datei abgeschlossen</string>
+    <string name="toast_file_delete_failed">Datei löschen fehlgeschlagen</string>
+    <string name="toast_delete_complete">Datei erfolgreich gelöscht</string>
     <string name="dialog_deleting_file">Entfernte Datei wird gelöscht</string>
     <string name="intro_page_three_description">Gerät gefunden. Nun den Besitzer des Geräts bitten, unsere Verbindung von %1$s zu akzeptieren und einen Ordner für uns freizugeben. Danach wird der Vorgang automatisch fortgesetzt. Bitte warten.</string>
     <string name="intro_page_three_searching_device">Das andere Gerät wird gesucht. Sobald die Suche abgeschlossen ist, wird der Vorgang automatisch fortgesetzt. Bitte warten.</string>
