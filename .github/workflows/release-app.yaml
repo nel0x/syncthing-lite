@@ -65,7 +65,7 @@ jobs:
           set -eu
           echo '${{ secrets.SIGNING_KEYSTORE_JKS_BASE64 }}' | base64 -d > "$SYNCTHING_RELEASE_STORE_FILE"
           java -version
-          ./gradlew --no-daemon lintRelease assembleRelease bundlegplay
+          ./gradlew --no-daemon lintRelease assembleRelease bundle
           rm "$SYNCTHING_RELEASE_STORE_FILE"
 
       - name: prepare-artifacts
@@ -74,13 +74,13 @@ jobs:
           set -eu
           #
           mv "app/build/outputs/apk/release/app-release.apk" "app/build/outputs/apk/release/com.github.catfriend1.syncthinglite_release_v${{ env.VERSION }}.apk"
-          mv "app/build/outputs/bundle/gplay/app-gplay.aab" "app/build/outputs/bundle/gplay/com.github.catfriend1.syncthinglite_gplay_v${{ env.VERSION }}.aab"
+          mv "app/build/outputs/bundle/release/app-release.aab" "app/build/outputs/bundle/release/com.github.catfriend1.syncthinglite_gplay_v${{ env.VERSION }}.aab"
           #
           cd "app/build/outputs/apk/release"
 
       - uses: ncipollo/release-action@v1
         with:
-          artifacts: "app/build/outputs/apk/release/*.apk,app/build/outputs/bundle/gplay/*.aab"
+          artifacts: "app/build/outputs/apk/release/*.apk,app/build/outputs/bundle/release/*.aab"
           artifactErrorsFailBuild: true
           name: Syncthing-Lite v${{ env.VERSION }}
           bodyFile: "app/src/main/play/release-notes/en-US/default.txt"
