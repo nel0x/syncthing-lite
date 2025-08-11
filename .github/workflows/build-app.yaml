@@ -16,7 +16,7 @@ jobs:
   build:
     name: Debug Build
     runs-on: ubuntu-latest
-    container: ghcr.io/catfriend1/syncthing-lite-builder
+    container: ghcr.io/nel0x/syncthing-lite-builder
     steps:
       - uses: actions/checkout@v4
         with:
